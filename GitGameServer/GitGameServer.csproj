@@ -107,6 +107,10 @@
   <ItemGroup />
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\GameController.cs" />
+    <Compile Include="Models\CreateGameInfo.cs" />
+    <Compile Include="Models\GameSettings.cs" />
+    <Compile Include="Models\States.cs" />
     <Compile Include="Models\ValueModel.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
