@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web.Http;
-using WebApiHelloWorld.Models;
+using GitGameServer.Models;
 
-namespace WebApiHelloWorld.Controllers
+namespace GitGameServer.Controllers
 {
     [RoutePrefix("api/values")]
     public class ValuesController : ApiController

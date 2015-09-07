@@ -1,6 +1,6 @@
 ﻿using System.Web.Http;
 
-namespace WebApiHelloWorld
+namespace GitGameServer
 {
     public static class WebApiConfig
     {

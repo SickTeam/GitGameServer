@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApiHelloWorld.Models
+namespace GitGameServer.Models
 {
     public class ValueModel
     {
