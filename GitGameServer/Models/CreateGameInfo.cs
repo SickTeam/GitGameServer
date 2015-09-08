@@ -10,5 +10,6 @@ namespace GitGameServer.Models
         public string Owner { get; set; }
         public string Repo { get; set; }
         public string Username { get; set; }
+        public string Token { get; set; }
     }
 }
