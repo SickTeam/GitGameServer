@@ -8,37 +8,37 @@ using System.Web.Http;
 
 namespace GitGameServer.Controllers
 {
-    [RoutePrefix("/woot")]
+    [RoutePrefix("woot")]
     public class GameController : ApiController
     {
-        [Route("/game")]
+        [Route("game")]
         [HttpPost]
         public IHttpActionResult CreateGame([FromBody]CreateGameInfo info)
         {
             throw new NotImplementedException();
         }
 
-        [Route("/game/{gameid}/setup")]
+        [Route("game/{gameid}/setup")]
         [HttpGet]
         public IHttpActionResult GetSetup()
         {
             throw new NotImplementedException();
         }
-        [Route("/game/{gameid}/setup")]
+        [Route("game/{gameid}/setup")]
         [HttpPut]
         public IHttpActionResult GetSetup([FromBody]GameSettings settings)
         {
             throw new NotImplementedException();
         }
 
-        [Route("/game/{gameid}/players")]
+        [Route("game/{gameid}/players")]
         [HttpPost]
         public IHttpActionResult AddUser([FromBody]string username)
         {
             throw new NotImplementedException();
         }
 
-        [Route("/game/{gameid}/messages")]
+        [Route("game/{gameid}/messages")]
         [HttpGet]
         public IHttpActionResult GetMessages()
         {
@@ -46,13 +46,13 @@ namespace GitGameServer.Controllers
             throw new NotImplementedException();
         }
 
-        [Route("/game/{gameid}/state")]
+        [Route("game/{gameid}/state")]
         [HttpGet]
         public IHttpActionResult GetState()
         {
             throw new NotImplementedException();
         }
-        [Route("/game/{gameid}/state")]
+        [Route("game/{gameid}/state")]
         [HttpPut]
         public IHttpActionResult GetState([FromBody]States state)
         {
