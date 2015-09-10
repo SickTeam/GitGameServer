@@ -1,8 +1,10 @@
 ﻿using GitGameServer.Models;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 
@@ -13,8 +15,10 @@ namespace GitGameServer.Controllers
     {
         [Route("game")]
         [HttpPost]
-        public IHttpActionResult CreateGame([FromBody]CreateGameInfo info)
+        public async Task<IHttpActionResult> CreateGame([FromBody]CreateGameInfo info)
         {
+            GitHubClient client = new GitHubClient(new ProductHeaderValue("GitGameServer")) { Credentials = new Credentials(info.Token) };
+
             throw new NotImplementedException();
         }
 
