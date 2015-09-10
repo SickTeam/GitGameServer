@@ -19,6 +19,14 @@ namespace GitGameServer.Controllers
         {
             GitHubClient client = new GitHubClient(new ProductHeaderValue("GitGameServer")) { Credentials = new Credentials(info.Token) };
 
+            if (!(await client.Search.SearchUsers(new SearchUsersRequest(info.Owner))).Items.Any(x => x.Login == info.Owner))
+                return BadRequest($"Unknown GitHub user; {info.Owner}.");
+
+            if (!(await client.Repository.GetAllForUser(info.Owner)).Any(x => x.Name == info.Repo))
+                return BadRequest($"Unknown GitHub repository; {info.Owner}/{info.Repo}.");
+
+            var commits = await client.Repository.Commits.GetAll(info.Owner, info.Repo);
+
             throw new NotImplementedException();
         }
 
