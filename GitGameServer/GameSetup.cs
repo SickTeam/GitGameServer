@@ -5,16 +5,22 @@ namespace GitGameServer
 {
     public class GameSetup
     {
+        private readonly string hash;
+
         private readonly string owner, repository;
         private Octokit.GitHubCommit[] commits;
 
         public GameSetup(string owner, string repo, IEnumerable<Octokit.GitHubCommit> commits)
         {
+            this.hash = HashHelper.GetMD5($"{owner}/{repo}");
+
             this.owner = owner;
             this.repository = repo;
 
             this.commits = commits.ToArray();
         }
+
+        public string Hash => hash;
 
         public string Owner => owner;
         public string Repository => repository;
