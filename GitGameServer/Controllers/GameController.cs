@@ -1,11 +1,8 @@
 ﻿using GitGameServer.Models;
 using Octokit;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 
 namespace GitGameServer.Controllers
@@ -27,7 +24,11 @@ namespace GitGameServer.Controllers
 
             var commits = await client.Repository.Commits.GetAll(info.Owner, info.Repo);
 
-            throw new NotImplementedException();
+            GameSetup setup = new GameSetup(info.Owner, info.Repo, commits);
+            GameManager.Singleton.AddSetup(setup);
+            var user = setup.AddUser(info.Username);
+
+            return Ok(new { gameid = setup.Hash, userid = user.Hash });
         }
 
         [Route("game/{gameid}/setup")]
