@@ -29,6 +29,8 @@ namespace GitGameServer
 
             this.commits = commits.ToArray();
             this.count = commits.Count(filter);
+
+            this.settings = GameSettings.None;
         }
 
         public string Hash => hash;
