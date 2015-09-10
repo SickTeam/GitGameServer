@@ -20,6 +20,8 @@ namespace GitGameServer
             return true;
         }
 
+        private List<User> users;
+        
         public GameSetup(string owner, string repo, IEnumerable<Octokit.GitHubCommit> commits)
         {
             this.hash = HashHelper.GetMD5($"{owner}/{repo}");
@@ -31,6 +33,8 @@ namespace GitGameServer
             this.count = commits.Count(filter);
 
             this.settings = GameSettings.None;
+
+            this.users = new List<User>();
         }
 
         public string Hash => hash;
@@ -48,6 +52,13 @@ namespace GitGameServer
                 settings = value;
                 count = commits.Count(filter);
             }
+        }
+
+        public User AddUser(string username)
+        {
+            var user = User.Create(username);
+            this.users.Add(user);
+            return user;
         }
     }
 }
