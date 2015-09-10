@@ -13,9 +13,16 @@ namespace GitGameServer.Models
             public bool Active { get; set; }
         }
 
+        public GameSettings()
+        {
+            this.Contributors = new Contributor[0];
+            this.ExcludeMerges = null;
+            this.LowerCase = null;
+        }
+
         public Contributor[] Contributors { get; set; }
         
-        public bool IncludeMerges { get; set; }
-        public bool LowerCase { get; set; }
+        public bool? ExcludeMerges { get; set; }
+        public bool? LowerCase { get; set; }
     }
 }
