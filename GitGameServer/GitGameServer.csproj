@@ -114,6 +114,7 @@
     <Compile Include="Controllers\GameController.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameManager.cs" />
+    <Compile Include="GameSettings.cs" />
     <Compile Include="GameSetup.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="Models\CreateGameInfo.cs" />
