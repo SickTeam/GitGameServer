@@ -1,11 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace GitGameServer
 {
     public class GameSetup
     {
+        private readonly string owner, repository;
+        private Octokit.GitHubCommit[] commits;
+
+        public GameSetup(string owner, string repo, IEnumerable<Octokit.GitHubCommit> commits)
+        {
+            this.owner = owner;
+            this.repository = repo;
+
+            this.commits = commits.ToArray();
+        }
+
+        public string Owner => owner;
+        public string Repository => repository;
+        
+        public IEnumerable<Commit> GetCommits()
+        {
+            foreach (var c in commits)
+                yield return new Commit(c.Commit.Message, c.Commit.User.Login, c.Stats.Additions, c.Stats.Deletions);
+        }
     }
 }
