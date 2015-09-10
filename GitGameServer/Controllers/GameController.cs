@@ -33,27 +33,27 @@ namespace GitGameServer.Controllers
 
         [Route("game/{gameid}/setup")]
         [HttpGet]
-        public IHttpActionResult GetSetup()
+        public IHttpActionResult GetSetup([FromUri]string gameid)
         {
             throw new NotImplementedException();
         }
         [Route("game/{gameid}/setup")]
         [HttpPut]
-        public IHttpActionResult GetSetup([FromBody]GameSettings settings)
+        public IHttpActionResult GetSetup([FromUri]string gameid, [FromBody]GameSettings settings)
         {
             throw new NotImplementedException();
         }
 
         [Route("game/{gameid}/players")]
         [HttpPost]
-        public IHttpActionResult AddUser([FromBody]string username)
+        public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
         {
             throw new NotImplementedException();
         }
 
         [Route("game/{gameid}/messages")]
         [HttpGet]
-        public IHttpActionResult GetMessages()
+        public IHttpActionResult GetMessages([FromUri]string gameid)
         {
             var mod = Request.Headers.IfModifiedSince;
             throw new NotImplementedException();
@@ -61,13 +61,13 @@ namespace GitGameServer.Controllers
 
         [Route("game/{gameid}/state")]
         [HttpGet]
-        public IHttpActionResult GetState()
+        public IHttpActionResult GetState([FromUri]string gameid)
         {
             throw new NotImplementedException();
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
-        public IHttpActionResult GetState([FromBody]States state)
+        public IHttpActionResult GetState([FromUri]string gameid, [FromBody]States state)
         {
             throw new NotImplementedException();
         }
