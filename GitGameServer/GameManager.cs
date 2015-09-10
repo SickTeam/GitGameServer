@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Web;
 using System.Web.Hosting;
 
 namespace GitGameServer
@@ -27,10 +24,17 @@ namespace GitGameServer
         }
 
         private readonly string path;
+        private Dictionary<string, GameSetup> setups;
 
         private GameManager(string path)
         {
             this.path = path;
+            this.setups = new Dictionary<string, GameSetup>();
+        }
+
+        public void AddSetup(GameSetup setup)
+        {
+            setups.Add(setup.Hash, setup);
         }
     }
 }
