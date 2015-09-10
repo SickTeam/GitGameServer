@@ -9,6 +9,16 @@ namespace GitGameServer
 
         private readonly string owner, repository;
         private Octokit.GitHubCommit[] commits;
+        private int count;
+
+        private GameSettings settings;
+        private bool filter(Octokit.GitHubCommit commit)
+        {
+            if (settings.HasFlag(GameSettings.ExcludeMerges) && commit.Parents.Count >= 2)
+                return false;
+
+            return true;
+        }
 
         public GameSetup(string owner, string repo, IEnumerable<Octokit.GitHubCommit> commits)
         {
@@ -18,17 +28,24 @@ namespace GitGameServer
             this.repository = repo;
 
             this.commits = commits.ToArray();
+            this.count = commits.Count(filter);
         }
 
         public string Hash => hash;
 
         public string Owner => owner;
         public string Repository => repository;
-        
-        public IEnumerable<Commit> GetCommits()
+
+        public int CommitCount => count;
+
+        public GameSettings Settings
         {
-            foreach (var c in commits)
-                yield return new Commit(c.Commit.Message, c.Commit.User.Login, c.Stats.Additions, c.Stats.Deletions);
+            get { return settings; }
+            set
+            {
+                settings = value;
+                count = commits.Count(filter);
+            }
         }
     }
 }
