@@ -24,12 +24,19 @@ namespace GitGameServer
         }
 
         private readonly string path;
+        private Dictionary<string, Game> games;
         private Dictionary<string, GameSetup> setups;
 
         private GameManager(string path)
         {
             this.path = path;
+            this.games = new Dictionary<string, Game>();
             this.setups = new Dictionary<string, GameSetup>();
+        }
+
+        private string getFilePath(string hash)
+        {
+            return Path.ChangeExtension(Path.Combine(path, hash), "json");
         }
 
         public void AddSetup(GameSetup setup)
@@ -39,6 +46,22 @@ namespace GitGameServer
         public bool TryGetSetup(string hash, out GameSetup setup)
         {
             return setups.TryGetValue(hash, out setup);
+        }
+
+        public Game StartGame(GameSetup setup)
+        {
+            string hash = setup.Hash;
+            string filepath = getFilePath(hash);
+
+            setups.Remove(hash);
+            Game game = Game.FromSetup(setup, filepath);
+            games.Add(hash, game);
+
+            return game;
+        }
+        public bool TryGetGame(string hash, out Game game)
+        {
+            return games.TryGetValue(hash, out game);
         }
     }
 }
