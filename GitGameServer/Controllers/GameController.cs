@@ -35,13 +35,37 @@ namespace GitGameServer.Controllers
         [HttpGet]
         public IHttpActionResult GetSetup([FromUri]string gameid)
         {
-            throw new NotImplementedException();
+            GameSettings settings;
+            GameSetup setup;
+            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+                settings = setup.Settings;
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
+
+            return Ok(new
+            {
+                contributors = setup.GetContributors(),
+                excludemerges = settings.HasFlag(GameSettings.ExcludeMerges),
+                lowercase = settings.HasFlag(GameSettings.LowerCase)
+            });
         }
         [Route("game/{gameid}/setup")]
         [HttpPut]
         public IHttpActionResult SetSetup([FromUri]string gameid, [FromBody]Models.GameSettings settings)
         {
-            throw new NotImplementedException();
+            GameSetup setup;
+            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+            {
+                setup.Settings = SetFlag(setup.Settings, GameSettings.ExcludeMerges, settings.ExcludeMerges);
+                setup.Settings = SetFlag(setup.Settings, GameSettings.LowerCase, settings.LowerCase);
+
+                foreach (var c in settings.Contributors)
+                    setup.SetContributor(c.Name, c.Active);
+
+                return Ok();
+            }
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
 
         public GameSettings SetFlag(GameSettings value, GameSettings flag, bool? on)
