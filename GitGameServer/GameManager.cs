@@ -36,5 +36,9 @@ namespace GitGameServer
         {
             setups.Add(setup.Hash, setup);
         }
+        public bool TryGetSetup(string hash, out GameSetup setup)
+        {
+            return setups.TryGetValue(hash, out setup);
+        }
     }
 }
