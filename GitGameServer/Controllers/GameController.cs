@@ -39,9 +39,26 @@ namespace GitGameServer.Controllers
         }
         [Route("game/{gameid}/setup")]
         [HttpPut]
-        public IHttpActionResult GetSetup([FromUri]string gameid, [FromBody]GameSettings settings)
+        public IHttpActionResult SetSetup([FromUri]string gameid, [FromBody]Models.GameSettings settings)
         {
             throw new NotImplementedException();
+        }
+
+        public GameSettings SetFlag(GameSettings value, GameSettings flag, bool? on)
+        {
+            if (on.HasValue)
+            {
+                int v = (int)value;
+                int f = (int)flag;
+
+                if (on.Value)
+                    v |= f;
+                else
+                    v &= ~f;
+
+                value = (GameSettings)v;
+            }
+            return value;
         }
 
         [Route("game/{gameid}/players")]
