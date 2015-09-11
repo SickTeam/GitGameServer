@@ -89,7 +89,15 @@ namespace GitGameServer.Controllers
         [HttpPost]
         public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
         {
-            throw new NotImplementedException();
+            GameSetup setup;
+            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+            {
+                User user = setup.AddUser(username);
+
+                return Ok(new { userid = user.Hash });
+            }
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
 
         [Route("game/{gameid}/messages")]
