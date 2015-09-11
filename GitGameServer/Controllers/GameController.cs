@@ -112,13 +112,29 @@ namespace GitGameServer.Controllers
         [HttpGet]
         public IHttpActionResult GetState([FromUri]string gameid)
         {
-            throw new NotImplementedException();
+            GameSetup setup;
+            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+                return Ok(new { state = "setup" });
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
         public IHttpActionResult SetState([FromUri]string gameid, [FromBody]SetStates state)
         {
-            throw new NotImplementedException();
+            GameSetup setup;
+            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+            {
+                if (state == SetStates.start)
+                {
+                    GameManager.Singleton.StartGame(setup);
+                    return Ok();
+                }
+                else
+                    return BadRequest("Invalid game state.");
+            }
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
     }
 }
