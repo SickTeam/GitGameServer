@@ -5,7 +5,7 @@ using System.Web;
 
 namespace GitGameServer.Models
 {
-    public enum States
+    public enum SetStates
     {
         start
     }

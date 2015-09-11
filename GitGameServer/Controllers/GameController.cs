@@ -67,7 +67,7 @@ namespace GitGameServer.Controllers
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
-        public IHttpActionResult GetState([FromUri]string gameid, [FromBody]States state)
+        public IHttpActionResult SetState([FromUri]string gameid, [FromBody]SetStates state)
         {
             throw new NotImplementedException();
         }

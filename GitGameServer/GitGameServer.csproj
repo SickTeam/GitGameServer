@@ -119,7 +119,7 @@
     <Compile Include="HashHelper.cs" />
     <Compile Include="Models\CreateGameInfo.cs" />
     <Compile Include="Models\GameSettings.cs" />
-    <Compile Include="Models\States.cs" />
+    <Compile Include="Models\SetStates.cs" />
     <Compile Include="Models\ValueModel.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
