@@ -99,5 +99,16 @@ namespace GitGameServer
 
             return list.ToArray();
         }
+        public IEnumerable<User> GetUsers()
+        {
+            foreach (var u in users)
+                yield return u;
+        }
+        public IEnumerable<Octokit.GitHubCommit> GetCommits()
+        {
+            foreach (var c in commits)
+                if (filter(c))
+                    yield return c;
+        }
     }
 }
