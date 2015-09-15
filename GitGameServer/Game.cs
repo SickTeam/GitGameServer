@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web;
 
 namespace GitGameServer
 {
@@ -16,6 +13,8 @@ namespace GitGameServer
 
         private User[] users;
         private string[] contributors;
+
+        private CommitCollection commits;
 
         private long tableStart;
         private int rowSize;
@@ -73,6 +72,7 @@ namespace GitGameServer
                     game.contributors[i] = fs.ReadString();
 
                 game.rowCount = fs.ReadInt32();
+                game.commits = new CommitCollection(game);
 
                 game.tableStart = fs.Position;
                 game.rowSize = 40 + game.users.Length;
@@ -109,5 +109,42 @@ namespace GitGameServer
 
         public string Owner => owner;
         public string Repository => repository;
+
+        public class CommitCollection
+        {
+            private Commit[] commits;
+            private Game game;
+
+            public CommitCollection(Game game)
+            {
+                this.game = game;
+                this.commits = new Commit[game.rowCount];
+            }
+
+            public Commit this[int index]
+            {
+                get
+                {
+                    if (commits[index] == null)
+                    {
+                        string sha;
+                        byte[] answers = new byte[game.users.Length];
+                        using (FileStream fs = new FileStream(game.path, FileMode.Open))
+                        {
+                            fs.Seek(game.tableStart + index * game.rowSize, SeekOrigin.Current);
+
+                            byte[] buffer = new byte[40];
+                            fs.Read(buffer, 0, 40);
+                            sha = Encoding.ASCII.GetString(buffer, 0, 40);
+                            fs.Read(answers, 0, answers.Length);
+                        }
+
+                        var c = game.client.Repository.Commits.Get(game.owner, game.repository, sha).Result;
+                        commits[index] = new Commit(c.Commit.Message, c.Commit.Committer.Name, c.Stats.Additions, c.Stats.Deletions);
+                    }
+                    return commits[index];
+                }
+            }
+        }
     }
 }
