@@ -9,6 +9,8 @@ namespace GitGameServer
     public class Game
     {
         private readonly string path;
+        private readonly string token;
+
         private readonly string owner, repository;
 
         public static Game FromSetup(GameSetup setup, string filepath)
@@ -21,9 +23,10 @@ namespace GitGameServer
             throw new NotImplementedException();
         }
 
-        private Game(string path, string owner, string repo)
+        private Game(string path, string token, string owner, string repo)
         {
             this.path = path;
+            this.token = token;
 
             this.owner = owner;
             this.repository = repo;
