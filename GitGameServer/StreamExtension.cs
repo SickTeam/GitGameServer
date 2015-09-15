@@ -20,6 +20,15 @@ namespace GitGameServer
             stream.Write(buffer, 0, buffer.Length);
         }
 
+        public static void WriteZeros(this Stream stream, int count)
+        {
+            int bufferSize = 8192;
+            byte[] buffer = new byte[bufferSize];
+
+            while (count > bufferSize) { stream.Write(buffer, 0, bufferSize); count -= bufferSize; }
+            if (bufferSize > 0) stream.Write(buffer, 0, count);
+        }
+
         public static int ReadInt32(this Stream stream)
         {
             byte[] buffer = new byte[4];
