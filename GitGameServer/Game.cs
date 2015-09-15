@@ -10,7 +10,7 @@ namespace GitGameServer
     public class Game
     {
         private readonly string path;
-        private readonly string token;
+        private readonly Octokit.GitHubClient client;
 
         private readonly string owner, repository;
 
@@ -53,7 +53,6 @@ namespace GitGameServer
 
             return Game.FromFile(filepath);
         }
-
         public static Game FromFile(string filepath)
         {
             using (FileStream fs = new FileStream(filepath, FileMode.Open))
@@ -102,7 +101,7 @@ namespace GitGameServer
         private Game(string path, string token, string owner, string repo)
         {
             this.path = path;
-            this.token = token;
+            this.client = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("GitGameServer")) { Credentials = new Octokit.Credentials(token) };
 
             this.owner = owner;
             this.repository = repo;
