@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web;
 
 namespace GitGameServer
@@ -15,7 +16,34 @@ namespace GitGameServer
 
         public static Game FromSetup(GameSetup setup, string filepath)
         {
-            throw new NotImplementedException();
+            using (FileStream fs = new FileStream(filepath, FileMode.CreateNew))
+            {
+                fs.Write(setup.Owner);
+                fs.Write(setup.Repository);
+                fs.Write(setup.Token);
+                fs.Write((int)setup.Settings);
+
+                var users = setup.GetUsers().ToArray();
+                fs.Write(users.Length);
+                foreach (var u in users)
+                    u.ToStream(fs);
+
+                var contributors = setup.GetContributors().Where(c => c.Active).ToArray();
+                fs.Write(contributors.Length);
+                foreach (var c in contributors)
+                    fs.Write(c.Name);
+
+                var commits = setup.GetCommits().ToArray();
+                fs.Write(commits.Length);
+                foreach (var c in commits)
+                {
+                    byte[] text = Encoding.ASCII.GetBytes(c.Sha);
+                    fs.Write(text, 0, 40);
+                    fs.WriteZeros(users.Length);
+                }
+            }
+
+            return Game.FromFile(filepath);
         }
 
         public static Game FromFile(string filepath)
