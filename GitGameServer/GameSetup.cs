@@ -94,10 +94,11 @@ namespace GitGameServer
                 else if (!con.Active && filter(c))
                     con.Active = true;
             }
-            foreach(var c in list)
+            foreach (var c in list)
             {
                 var t = contributors.FirstOrDefault(x => x.Name == c.Name);
-                c.Active = t.Active;
+                if (t != null)
+                    c.Active = t.Active;
             }
 
             return list.ToArray();
