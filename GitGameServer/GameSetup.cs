@@ -6,6 +6,7 @@ namespace GitGameServer
     public class GameSetup
     {
         private readonly string hash;
+        private readonly string token;
 
         private readonly string owner, repository;
         private Octokit.GitHubCommit[] commits;
@@ -23,12 +24,13 @@ namespace GitGameServer
         private List<Models.Contributor> contributors;
         private List<User> users;
         
-        public GameSetup(string owner, string repo, IEnumerable<Octokit.GitHubCommit> commits)
+        public GameSetup(string owner, string repo, string token, IEnumerable<Octokit.GitHubCommit> commits)
         {
             this.hash = HashHelper.GetMD5($"{owner}/{repo}");
 
             this.owner = owner;
             this.repository = repo;
+            this.token = token;
 
             this.commits = commits.ToArray();
             this.settings = GameSettings.None;
@@ -39,6 +41,7 @@ namespace GitGameServer
         }
 
         public string Hash => hash;
+        public string Token => token;
 
         public string Owner => owner;
         public string Repository => repository;

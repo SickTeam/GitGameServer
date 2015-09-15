@@ -24,7 +24,7 @@ namespace GitGameServer.Controllers
 
             var commits = await client.Repository.Commits.GetAll(info.Owner, info.Repo);
 
-            GameSetup setup = new GameSetup(info.Owner, info.Repo, commits);
+            GameSetup setup = new GameSetup(info.Owner, info.Repo, info.Token, commits);
             GameManager.Singleton.AddSetup(setup);
             var user = setup.AddUser(info.Username);
 
