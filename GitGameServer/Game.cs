@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GitGameServer
 {
-    public class Game
+    public partial class Game
     {
         private readonly string path;
         private readonly Octokit.GitHubClient client;
@@ -140,7 +140,7 @@ namespace GitGameServer
                         }
 
                         var c = game.client.Repository.Commits.Get(game.owner, game.repository, sha).Result;
-                        commits[index] = new Commit(c.Commit.Message, c.Commit.Committer.Name, c.Stats.Additions, c.Stats.Deletions);
+                        commits[index] = new Commit(game, c.Commit.Message, c.Commit.Committer.Name, c.Stats.Additions, c.Stats.Deletions);
                     }
                     return commits[index];
                 }
