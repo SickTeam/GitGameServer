@@ -61,7 +61,15 @@ namespace GitGameServer
         }
         public bool TryGetGame(string hash, out Game game)
         {
-            return games.TryGetValue(hash, out game);
+            if (games.TryGetValue(hash, out game))
+                return true;
+
+            if (!File.Exists(getFilePath(hash)))
+                return false;
+
+            game = Game.FromFile(getFilePath(hash));
+            games.Add(hash, game);
+            return true;
         }
     }
 }
