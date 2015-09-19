@@ -118,6 +118,7 @@
     <Compile Include="GameSetup.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="IGame.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="Models\Contributor.cs" />
     <Compile Include="Models\CreateGameInfo.cs" />
     <Compile Include="Models\GameSettings.cs" />
