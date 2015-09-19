@@ -108,6 +108,8 @@ namespace GitGameServer
             this.repository = repo;
         }
 
+        string IGame.State => "started";
+
         public string Owner => owner;
         public string Repository => repository;
 

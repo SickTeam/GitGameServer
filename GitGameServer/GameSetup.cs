@@ -40,6 +40,8 @@ namespace GitGameServer
             this.users = new List<User>();
         }
 
+        string IGame.State => "setup";
+
         public string Hash => hash;
         public string Token => token;
 
