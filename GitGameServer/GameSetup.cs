@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace GitGameServer
 {
-    public class GameSetup
+    public class GameSetup : IGame
     {
         private readonly string hash;
         private readonly string token;

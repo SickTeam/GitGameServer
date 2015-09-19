@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GitGameServer
 {
-    public partial class Game
+    public partial class Game : IGame
     {
         private readonly string path;
         private readonly Octokit.GitHubClient client;
