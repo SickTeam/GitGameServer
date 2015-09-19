@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GitGameServer
 {
@@ -110,6 +111,23 @@ namespace GitGameServer
         public string Owner => owner;
         public string Repository => repository;
 
+        public int Round => tableIndex + 1;
+
+        public User GetUser(string hash)
+        {
+            for (int i = 0; i < users.Length; i++)
+                if (users[i].Hash == hash)
+                    return users[i];
+
+            return null;
+        }
+        public string[] GetUserNames()
+        {
+            return users.Select(x => x.Name).ToArray();
+        }
+
+        public CommitCollection Commits => commits;
+
         public class CommitCollection
         {
             private Commit[] commits;
@@ -121,29 +139,26 @@ namespace GitGameServer
                 this.commits = new Commit[game.rowCount];
             }
 
-            public Commit this[int index]
+            public async Task<Commit> GetCommit(int index)
             {
-                get
+                if (commits[index] == null)
                 {
-                    if (commits[index] == null)
+                    string sha;
+                    byte[] answers = new byte[game.users.Length];
+                    using (FileStream fs = new FileStream(game.path, FileMode.Open))
                     {
-                        string sha;
-                        byte[] answers = new byte[game.users.Length];
-                        using (FileStream fs = new FileStream(game.path, FileMode.Open))
-                        {
-                            fs.Seek(game.tableStart + index * game.rowSize, SeekOrigin.Current);
+                        fs.Seek(game.tableStart + index * game.rowSize, SeekOrigin.Current);
 
-                            byte[] buffer = new byte[40];
-                            fs.Read(buffer, 0, 40);
-                            sha = Encoding.ASCII.GetString(buffer, 0, 40);
-                            fs.Read(answers, 0, answers.Length);
-                        }
-
-                        var c = game.client.Repository.Commits.Get(game.owner, game.repository, sha).Result;
-                        commits[index] = new Commit(game, c.Commit.Message, c.Commit.Committer.Name, c.Stats.Additions, c.Stats.Deletions);
+                        byte[] buffer = new byte[40];
+                        fs.Read(buffer, 0, 40);
+                        sha = Encoding.ASCII.GetString(buffer, 0, 40);
+                        fs.Read(answers, 0, answers.Length);
                     }
-                    return commits[index];
+
+                    var c = await game.client.Repository.Commits.Get(game.owner, game.repository, sha);
+                    commits[index] = new Commit(game, sha, c.Commit.Message, c.Commit.Committer.Name, c.Stats.Additions, c.Stats.Deletions, answers);
                 }
+                return commits[index];
             }
         }
     }
