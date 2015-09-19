@@ -71,5 +71,38 @@ namespace GitGameServer
             games.Add(hash, game);
             return true;
         }
+
+        public bool TryGetGame(string hash, out IGame game)
+        {
+            GameSetup _setup;
+            Game _game;
+
+            if (setups.TryGetValue(hash, out _setup))
+            {
+                game = _setup;
+                return true;
+            }
+            else if (games.TryGetValue(hash, out _game))
+            {
+                game = _game;
+                return true;
+            }
+            else
+            {
+                string filepath = getFilePath(hash);
+                if (!File.Exists(filepath))
+                {
+                    game = null;
+                    return false;
+                }
+                else
+                {
+                    _game = Game.FromFile(filepath);
+                    games.Add(hash, _game);
+                    game = _game;
+                    return true;
+                }
+            }
+        }
     }
 }
