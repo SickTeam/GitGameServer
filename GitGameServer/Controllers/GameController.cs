@@ -113,8 +113,11 @@ namespace GitGameServer.Controllers
         public IHttpActionResult GetState([FromUri]string gameid)
         {
             GameSetup setup;
+            Game game;
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
                 return Ok(new { state = "setup" });
+            else if (GameManager.Singleton.TryGetGame(gameid, out game))
+                return Ok(new { state = "start" });
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
