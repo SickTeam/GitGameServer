@@ -120,6 +120,7 @@
     <Compile Include="Models\Contributor.cs" />
     <Compile Include="Models\CreateGameInfo.cs" />
     <Compile Include="Models\GameSettings.cs" />
+    <Compile Include="Models\GuessInput.cs" />
     <Compile Include="Models\SetStates.cs" />
     <Compile Include="Models\ValueModel.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
