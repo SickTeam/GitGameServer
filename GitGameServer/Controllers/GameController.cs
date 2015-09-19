@@ -1,4 +1,5 @@
 ﻿using GitGameServer.Models;
+using Newtonsoft.Json.Linq;
 using Octokit;
 using System;
 using System.Linq;
@@ -138,6 +139,86 @@ namespace GitGameServer.Controllers
             }
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
+        }
+
+        [Route("game/{gameid}/rounds/{round}/guesses")]
+        [HttpPost]
+        public async Task<IHttpActionResult> MakeGuess([FromUri]string gameid, [FromUri]int round, [FromBody]GuessInput guess)
+        {
+            var userhash = Request.Headers.Authorization.Scheme;
+            /* send: { guess: "mikaelec" } */
+            Game game;
+            if (!GameManager.Singleton.TryGetGame(gameid, out game))
+                return BadRequest($"No game with {nameof(gameid)} was found.");
+
+            var user = game.GetUser(userhash);
+
+            var commit = await game.Commits.GetCommit(round - 1);
+            if (await commit.Guesses.SetGuess(user.Name, guess.Guess))
+                return Ok();
+            else
+                return BadRequest();
+        }
+
+        [Route("game/{gameid}/rounds/{round}/guesses")]
+        [HttpGet]
+        public async Task<IHttpActionResult> GetGuesses([FromUri]string gameid, [FromUri]int round)
+        {
+            Game game;
+            if (!GameManager.Singleton.TryGetGame(gameid, out game))
+                return BadRequest($"No game with {nameof(gameid)} was found.");
+
+            JArray arr = new JArray();
+
+            var commit = await game.Commits.GetCommit(round - 1);
+            foreach (var u in game.GetUserNames())
+            {
+                string guess;
+                if (!commit.Guesses.GetGuess(u, out guess))
+                    continue;
+                bool hasguess = guess != null;
+
+                JObject obj = new JObject()
+                {
+                    { "name", u },
+                    { "hasguess", hasguess }
+                };
+
+                if (game.Round > round)
+                    obj.Add("guess", guess);
+
+                arr.Add(obj);
+            }
+
+            return Ok(arr);
+        }
+
+        [Route("game/{gameid}/rounds/{round}")]
+        [HttpGet]
+        public async Task<IHttpActionResult> GetRound([FromUri]string gameid, [FromUri]int round)
+        {
+            Game game;
+            if (!GameManager.Singleton.TryGetGame(gameid, out game))
+                return BadRequest($"No game with {nameof(gameid)} was found.");
+
+            JArray arr = new JArray();
+
+            var commit = await game.Commits.GetCommit(round - 1);
+
+            JObject obj = new JObject()
+            {
+                { "message", commit.Message },
+                { "linesadd", commit.Added },
+                { "linesremove", commit.Removed }
+            };
+
+            if (game.Round > round)
+            {
+                obj.Add("comitter", commit.Username);
+                obj.Add("sha", commit.Sha);
+            }
+
+            return Ok(obj);
         }
     }
 }
