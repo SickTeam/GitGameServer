@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,8 @@ namespace GitGameServer
         private string[] contributors;
 
         private CommitCollection commits;
+
+        private List<Message> messages = new List<Message>();
 
         private long tableStart;
         private int rowSize;
@@ -109,6 +112,15 @@ namespace GitGameServer
         }
 
         string IGame.State => "started";
+        IEnumerable<Message> IGame.GetMessages()
+        {
+            foreach (var m in messages)
+                yield return m;
+        }
+        public void Add(Message message)
+        {
+            this.messages.Add(message);
+        }
 
         public string Owner => owner;
         public string Repository => repository;

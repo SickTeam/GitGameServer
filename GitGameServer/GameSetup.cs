@@ -12,6 +12,8 @@ namespace GitGameServer
         private Octokit.GitHubCommit[] commits;
         private int count;
 
+        private List<Message> messages = new List<Message>();
+
         private GameSettings settings;
         private bool filter(Octokit.GitHubCommit commit)
         {
@@ -36,11 +38,18 @@ namespace GitGameServer
             this.settings = GameSettings.None;
             this.count = commits.Count(filter);
 
+            this.messages = new List<Message>();
+
             this.contributors = new List<Models.Contributor>();
             this.users = new List<User>();
         }
 
         string IGame.State => "setup";
+        IEnumerable<Message> IGame.GetMessages() { foreach (var m in messages) yield return m; }
+        public void Add(Message message)
+        {
+            this.messages.Add(message);
+        }
 
         public string Hash => hash;
         public string Token => token;
