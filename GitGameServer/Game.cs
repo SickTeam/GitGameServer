@@ -53,7 +53,6 @@ namespace GitGameServer
                     fs.WriteZeros(users.Length);
                 }
                 var mess = (setup as IGame).GetMessages().ToArray();
-                fs.Write(mess.Length);
                 foreach (var m in mess)
                     m.ToStream(fs);
             }
@@ -103,8 +102,7 @@ namespace GitGameServer
                 }
 
                 fs.Seek(game.tableStart + game.rowCount * game.rowSize, SeekOrigin.Begin);
-                int mSize = fs.ReadInt32();
-                for (int i = 0; i < mSize; i++)
+                while (fs.Position < fs.Length)
                     game.messages.Add(Message.FromStream(fs));
 
                 return game;
