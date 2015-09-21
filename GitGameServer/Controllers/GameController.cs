@@ -105,8 +105,23 @@ namespace GitGameServer.Controllers
         [HttpGet]
         public IHttpActionResult GetMessages([FromUri]string gameid)
         {
-            var mod = Request.Headers.IfModifiedSince;
-            throw new NotImplementedException();
+            var modoffset = Request.Headers.IfModifiedSince;
+            var mod = modoffset?.UtcDateTime;
+
+            IGame game;
+            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            {
+                var messages = mod.HasValue ? game.GetMessagesSince(mod.Value) : game.GetMessages();
+                var time = DateTime.UtcNow;
+                JObject obj = new JObject()
+                {
+                    { "timestamp", time },
+                    { "messages", new JArray(messages.Select(x=>x.ToJObject())) }
+                };
+                return Ok(obj);
+            }
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
 
         [Route("game/{gameid}/state")]
