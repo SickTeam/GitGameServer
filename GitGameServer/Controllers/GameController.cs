@@ -57,11 +57,28 @@ namespace GitGameServer.Controllers
             GameSetup setup;
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
             {
+                JObject settingsJ = new JObject();
+                if (settings.ExcludeMerges.HasValue)
+                    settingsJ.Add("excludemerges", settings.ExcludeMerges);
+                if (settings.LowerCase.HasValue)
+                    settingsJ.Add("lowercase", settings.LowerCase);
+
+                if (settings.Contributors.Length > 0)
+                {
+                    var cArr = new JArray();
+                    foreach (var c in settings.Contributors)
+                        cArr.Add(new JObject() { { "name", c.Name }, { "active", c.Active } });
+
+                    settingsJ.Add("contributors", cArr);
+                }
+
                 setup.Settings = SetFlag(setup.Settings, GameSettings.ExcludeMerges, settings.ExcludeMerges);
                 setup.Settings = SetFlag(setup.Settings, GameSettings.LowerCase, settings.LowerCase);
 
                 foreach (var c in settings.Contributors)
                     setup.SetContributor(c.Name, c.Active);
+
+                setup.Add(new Message(DateTime.UtcNow, "setup", $"/game/{gameid}/setup", settingsJ));
 
                 return Ok();
             }
