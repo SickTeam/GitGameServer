@@ -13,6 +13,10 @@ namespace GitGameServer
         {
             stream.Write(BitConverter.GetBytes(value), 0, 4);
         }
+        public static void Write(this Stream stream, long value)
+        {
+            stream.Write(BitConverter.GetBytes(value), 0, 8);
+        }
         public static void Write(this Stream stream, string value)
         {
             byte[] buffer = Encoding.UTF8.GetBytes(value);
@@ -34,6 +38,12 @@ namespace GitGameServer
             byte[] buffer = new byte[4];
             stream.Read(buffer, 0, 4);
             return BitConverter.ToInt32(buffer, 0);
+        }
+        public static long ReadInt64(this Stream stream)
+        {
+            byte[] buffer = new byte[8];
+            stream.Read(buffer, 0, 8);
+            return BitConverter.ToInt64(buffer, 0);
         }
         public static string ReadString(this Stream stream)
         {
