@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Web.Hosting;
 
@@ -54,6 +56,7 @@ namespace GitGameServer
             string filepath = getFilePath(hash);
 
             setups.Remove(hash);
+            setup.Add(new Message(DateTime.UtcNow, "roundstart", $"/game/{hash}/rounds/1", new JObject() { { "round", 1 } }));
             Game game = Game.FromSetup(setup, filepath);
             games.Add(hash, game);
 
