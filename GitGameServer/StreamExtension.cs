@@ -9,6 +9,10 @@ namespace GitGameServer
 {
     public static class StreamExtension
     {
+        public static void Write(this Stream stream, bool value)
+        {
+            stream.WriteByte((byte)(value ? 1 : 0));
+        }
         public static void Write(this Stream stream, int value)
         {
             stream.Write(BitConverter.GetBytes(value), 0, 4);
@@ -33,6 +37,10 @@ namespace GitGameServer
             if (bufferSize > 0) stream.Write(buffer, 0, count);
         }
 
+        public static bool ReadBoolean(this Stream stream)
+        {
+            return stream.ReadByte() != 0;
+        }
         public static int ReadInt32(this Stream stream)
         {
             byte[] buffer = new byte[4];

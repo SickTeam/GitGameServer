@@ -16,7 +16,7 @@ namespace GitGameServer
             stream.Write(timestamp.ToBinary());
             stream.Write(name);
             stream.Write(url);
-            stream.WriteByte(resource == null ? (byte)0 : (byte)1);
+            stream.Write(resource == null);
             if (resource != null)
                 stream.Write(resource.ToString(Newtonsoft.Json.Formatting.None));
         }
@@ -25,7 +25,7 @@ namespace GitGameServer
             long ticks = stream.ReadInt64();
             string name = stream.ReadString();
             string url = stream.ReadString();
-            bool hasR = stream.ReadByte() == 1;
+            bool hasR = stream.ReadBoolean();
 
             return new Message(DateTime.FromBinary(ticks), name, url, hasR ? JObject.Parse(stream.ReadString()) : null);
         }
