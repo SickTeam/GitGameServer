@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -136,6 +138,13 @@ namespace GitGameServer
         public string Repository => repository;
 
         public int Round => tableIndex + 1;
+
+        public void NextRound()
+        {
+            messages.Add(new Message(DateTime.UtcNow, "rounddone", $"/game/{hash}/rounds/{Round}", new JObject() { { "round", Round } }));
+            tableIndex++;
+            messages.Add(new Message(DateTime.UtcNow, "roundstart", $"/game/{hash}/rounds/{Round}", new JObject() { { "round", Round } }));
+        }
 
         public User GetUser(string hash)
         {
