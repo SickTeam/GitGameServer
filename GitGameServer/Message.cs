@@ -52,6 +52,8 @@ namespace GitGameServer
         public string Name => name;
         public virtual string GetURL(string gameid) => url;
 
+        public virtual JToken GetResource() => resource;
+
         public JObject ToJObject(string gameid)
         {
             var obj = new JObject()
@@ -60,8 +62,9 @@ namespace GitGameServer
                 {"url", GetURL(gameid) }
             };
 
-            if (resource != null)
-                obj.Add("resource", resource);
+            var res = GetResource();
+            if (res != null)
+                obj.Add("resource", res);
 
             return obj;
         }
