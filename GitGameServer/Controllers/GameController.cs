@@ -186,6 +186,8 @@ namespace GitGameServer.Controllers
             if (await commit.Guesses.SetGuess(user.Name, guess.Guess))
             {
                 game.Add(new Message(DateTime.UtcNow, "roundguess", $"/game/{gameid}/rounds/{round}/guesses", new JObject() { { "username", user.Name } }));
+                if (commit.Guesses.RoundDone)
+                    game.NextRound();
                 return Ok();
             }
             else
