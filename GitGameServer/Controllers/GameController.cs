@@ -184,7 +184,10 @@ namespace GitGameServer.Controllers
 
             var commit = await game.Commits.GetCommit(round - 1);
             if (await commit.Guesses.SetGuess(user.Name, guess.Guess))
+            {
+                game.Add(new Message(DateTime.UtcNow, "roundguess", $"/game/{gameid}/rounds/{round}/guesses", new JObject() { { "username", user.Name } }));
                 return Ok();
+            }
             else
                 return BadRequest();
         }
