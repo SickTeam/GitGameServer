@@ -16,7 +16,7 @@ namespace GitGameServer
             stream.Write(timestamp.ToBinary());
             stream.Write(name);
             stream.Write(url);
-            stream.Write(resource == null);
+            stream.Write(resource != null);
             if (resource != null)
                 stream.Write(resource.ToString(Newtonsoft.Json.Formatting.None));
         }
