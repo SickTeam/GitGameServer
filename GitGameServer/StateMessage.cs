@@ -7,6 +7,15 @@ namespace GitGameServer
 {
     public class StateMessage : Message
     {
+        public static StateMessage CreateStarted(int round)
+        {
+            return new StateMessage("started", round);
+        }
+        public static StateMessage CreateFinished()
+        {
+            return new StateMessage("finished", 0);
+        }
+
         private string state;
         private int round;
         
