@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using Newtonsoft.Json.Linq;
 
 namespace GitGameServer
 {
@@ -29,6 +26,15 @@ namespace GitGameServer
         public override string GetURL(string gameid)
         {
             return $"/game/{gameid}/state";
+        }
+
+        public override JToken GetResource()
+        {
+            var obj = new JObject();
+            obj.Add("state", state);
+            if (round > 0)
+                obj.Add("round", round);
+            return obj;
         }
     }
 }
