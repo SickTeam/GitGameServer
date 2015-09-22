@@ -12,6 +12,7 @@ namespace GitGameServer
         private readonly Octokit.GitHubClient client;
 
         private readonly string owner, repository;
+        private readonly string hash;
 
         private User[] users;
         private string[] contributors;
@@ -29,6 +30,7 @@ namespace GitGameServer
         {
             using (FileStream fs = new FileStream(filepath, FileMode.CreateNew))
             {
+                fs.Write(setup.Hash);
                 fs.Write(setup.Owner);
                 fs.Write(setup.Repository);
                 fs.Write(setup.Token);
@@ -63,12 +65,13 @@ namespace GitGameServer
         {
             using (FileStream fs = new FileStream(filepath, FileMode.Open))
             {
+                string hash = fs.ReadString();
                 string owner = fs.ReadString();
                 string repo = fs.ReadString();
                 string token = fs.ReadString();
                 byte set = (byte)fs.ReadInt32();
 
-                Game game = new Game(filepath, token, owner, repo);
+                Game game = new Game(filepath, token, owner, repo, hash);
 
                 game.users = new User[fs.ReadInt32()];
                 for (int i = 0; i < game.users.Length; i++)
@@ -109,7 +112,7 @@ namespace GitGameServer
             }
         }
 
-        private Game(string path, string token, string owner, string repo)
+        private Game(string path, string token, string owner, string repo, string hash)
         {
             this.path = path;
             this.client = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("GitGameServer")) { Credentials = new Octokit.Credentials(token) };
