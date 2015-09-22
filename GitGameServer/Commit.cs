@@ -56,6 +56,8 @@ namespace GitGameServer
                     this.guesses = guesses;
                 }
 
+                public bool RoundDone => guesses.All(x => x != 0);
+
                 public bool GetGuess(string username, out string guess)
                 {
                     int user = Array.FindIndex(commit.game.users, x => x.Name == username);
