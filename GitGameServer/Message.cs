@@ -49,7 +49,7 @@ namespace GitGameServer
         }
 
         public DateTime Timestamp => timestamp;
-        public string Name => name;
+        public virtual string Name => name;
         public virtual string GetURL(string gameid) => url;
 
         public virtual JToken GetResource() => resource;
