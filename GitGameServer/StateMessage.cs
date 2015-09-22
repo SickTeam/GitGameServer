@@ -15,5 +15,11 @@ namespace GitGameServer
             this.state = state;
             this.round = round;
         }
+
+        public override string Name => "state";
+        public override string GetURL(string gameid)
+        {
+            return $"/game/{gameid}/state";
+        }
     }
 }
