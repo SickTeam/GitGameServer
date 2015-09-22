@@ -133,7 +133,7 @@ namespace GitGameServer.Controllers
                 JObject obj = new JObject()
                 {
                     { "timestamp", time },
-                    { "messages", new JArray(messages.Select(x=>x.ToJObject())) }
+                    { "messages", new JArray(messages.Select(x=>x.ToJObject(gameid))) }
                 };
                 return Ok(obj);
             }

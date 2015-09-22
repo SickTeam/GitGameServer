@@ -50,14 +50,14 @@ namespace GitGameServer
 
         public DateTime Timestamp => timestamp;
         public string Name => name;
-        public string URL => url;
+        public virtual string GetURL(string gameid) => url;
 
-        public JObject ToJObject()
+        public JObject ToJObject(string gameid)
         {
             var obj = new JObject()
             {
                 {"name", name },
-                {"url", url }
+                {"url", GetURL(gameid) }
             };
 
             if (resource != null)
