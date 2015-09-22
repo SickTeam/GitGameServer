@@ -88,7 +88,7 @@ namespace GitGameServer
                     if (g == -1)
                         return false;
 
-                    guesses[user] = (byte)g;
+                    guesses[user] = (byte)(g + 1);
                     using (FileStream fs = new FileStream(commit.game.path, FileMode.Open, FileAccess.ReadWrite))
                     {
                         long offset = commit.game.tableStart + commit.game.tableIndex * commit.game.rowSize;
@@ -97,7 +97,7 @@ namespace GitGameServer
                         if (existing > 0)
                             return false;
                         fs.Seek(-1, SeekOrigin.Current);
-                        fs.WriteByte((byte)(g + 1));
+                        fs.WriteByte(guesses[user]);
                     }
 
                     return true;
