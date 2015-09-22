@@ -30,6 +30,16 @@ namespace GitGameServer
             return new Message(DateTime.FromBinary(ticks), name, url, hasR ? JObject.Parse(stream.ReadString()) : null);
         }
 
+        protected Message(DateTime timestamp)
+        {
+            this.timestamp = timestamp;
+        }
+        protected Message()
+            : this(DateTime.UtcNow)
+        {
+
+        }
+
         public Message(DateTime timestamp, string name, string url, JObject resource = null)
         {
             this.timestamp = timestamp;
@@ -41,7 +51,7 @@ namespace GitGameServer
         public DateTime Timestamp => timestamp;
         public string Name => name;
         public string URL => url;
-        
+
         public JObject ToJObject()
         {
             var obj = new JObject()
