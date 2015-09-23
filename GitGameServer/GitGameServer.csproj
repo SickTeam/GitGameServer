@@ -116,6 +116,7 @@
     <Compile Include="GameManager.cs" />
     <Compile Include="GameSettings.cs" />
     <Compile Include="GameSetup.cs" />
+    <Compile Include="GuessMessage.cs" />
     <Compile Include="HashHelper.cs" />
     <Compile Include="IGame.cs" />
     <Compile Include="Message.cs" />
