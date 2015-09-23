@@ -4,31 +4,29 @@ using System.IO;
 
 namespace GitGameServer
 {
-    public class Message
+    public abstract class Message
     {
         private DateTime timestamp;
-        private string name;
-        private string url;
-        private JObject resource;
 
         public void ToStream(Stream stream)
         {
+            throw new ArgumentException($"Unknown {nameof(Message)} type; {this.GetType().Name}.");
+
             stream.Write(timestamp.ToBinary());
-            stream.Write(name);
-            stream.Write(url);
-            stream.Write(resource != null);
-            if (resource != null)
-                stream.Write(resource.ToString(Newtonsoft.Json.Formatting.None));
+            toStream(stream);
         }
         public static Message FromStream(Stream stream)
         {
-            long ticks = stream.ReadInt64();
-            string name = stream.ReadString();
-            string url = stream.ReadString();
-            bool hasR = stream.ReadBoolean();
+            char type = (char)stream.ReadByte();
+            DateTime timestamp = DateTime.FromBinary(stream.ReadInt64());
 
-            return new Message(DateTime.FromBinary(ticks), name, url, hasR ? JObject.Parse(stream.ReadString()) : null);
+            switch (type)
+            {
+                default:
+                    throw new InvalidOperationException($"Unknown message identifier: {type}.");
+            }
         }
+        protected abstract void toStream(Stream stream);
 
         protected Message(DateTime timestamp)
         {
@@ -40,25 +38,17 @@ namespace GitGameServer
 
         }
 
-        public Message(DateTime timestamp, string name, string url, JObject resource = null)
-        {
-            this.timestamp = timestamp;
-            this.name = name;
-            this.url = url;
-            this.resource = resource;
-        }
-
         public DateTime Timestamp => timestamp;
-        public virtual string Name => name;
-        public virtual string GetURL(string gameid) => url;
+        public abstract string Name { get; }
+        public abstract string GetURL(string gameid);
 
-        public virtual JToken GetResource() => resource;
+        public abstract JToken GetResource();
 
         public JObject ToJObject(string gameid)
         {
             var obj = new JObject()
             {
-                {"name", name },
+                {"name", Name },
                 {"url", GetURL(gameid) }
             };
 
