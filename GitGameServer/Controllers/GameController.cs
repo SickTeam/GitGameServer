@@ -111,7 +111,7 @@ namespace GitGameServer.Controllers
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
             {
                 User user = setup.AddUser(username);
-                setup.Add(new Message(DateTime.UtcNow, "players", $"game/{gameid}/players", new JObject() { { "username", username } }));
+                setup.Add(new PlayerMessage(username));
                 return Ok(new { userid = user.Hash });
             }
             else
