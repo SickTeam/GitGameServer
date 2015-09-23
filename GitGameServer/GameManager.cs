@@ -56,9 +56,11 @@ namespace GitGameServer
             string filepath = getFilePath(hash);
 
             setups.Remove(hash);
-            setup.Add(new RoundStartMessage(1));
             Game game = Game.FromSetup(setup, filepath);
             games.Add(hash, game);
+
+            setup.Add(StateMessage.CreateStarted());
+            setup.Add(new RoundStartMessage(1));
 
             return game;
         }
