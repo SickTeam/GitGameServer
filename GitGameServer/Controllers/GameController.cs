@@ -78,7 +78,7 @@ namespace GitGameServer.Controllers
                 foreach (var c in settings.Contributors)
                     setup.SetContributor(c.Name, c.Active);
 
-                setup.Add(new Message(DateTime.UtcNow, "setup", $"/game/{gameid}/setup", settingsJ));
+                setup.Add(new SetupMessage(settings));
 
                 return Ok();
             }
