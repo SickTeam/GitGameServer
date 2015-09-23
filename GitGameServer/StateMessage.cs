@@ -6,37 +6,34 @@ namespace GitGameServer
 {
     public class StateMessage : Message
     {
-        public static StateMessage CreateStarted(int round)
+        public static StateMessage CreateStarted()
         {
-            return new StateMessage("started", round);
+            return new StateMessage("started");
         }
         public static StateMessage CreateFinished()
         {
-            return new StateMessage("finished", 0);
+            return new StateMessage("finished");
         }
 
         private string state;
-        private int round;
 
         protected override void toStream(Stream stream)
         {
             stream.Write(state);
-            stream.Write(round);
         }
         public static StateMessage FromStream(DateTime timestamp, Stream stream)
         {
-            return new StateMessage(timestamp, stream.ReadString(), stream.ReadInt32());
+            return new StateMessage(timestamp, stream.ReadString());
         }
 
-        private StateMessage(DateTime timestamp, string state, int round)
+        private StateMessage(DateTime timestamp, string state)
             : base(timestamp)
         {
-            this.round = round;
+            this.state = state;
         }
-        private StateMessage(string state, int round)
+        private StateMessage(string state)
         {
             this.state = state;
-            this.round = round;
         }
 
         public override string Name => "state";
@@ -49,8 +46,6 @@ namespace GitGameServer
         {
             var obj = new JObject();
             obj.Add("state", state);
-            if (round > 0)
-                obj.Add("round", round);
             return obj;
         }
     }
