@@ -56,7 +56,7 @@ namespace GitGameServer
             string filepath = getFilePath(hash);
 
             setups.Remove(hash);
-            setup.Add(new Message(DateTime.UtcNow, "roundstart", $"/game/{hash}/rounds/1", new JObject() { { "round", 1 } }));
+            setup.Add(new RoundStartMessage(1));
             Game game = Game.FromSetup(setup, filepath);
             games.Add(hash, game);
 

@@ -141,9 +141,9 @@ namespace GitGameServer
 
         public void NextRound()
         {
-            messages.Add(new Message(DateTime.UtcNow, "rounddone", $"/game/{hash}/rounds/{Round}", new JObject() { { "round", Round } }));
+            messages.Add(new RoundDoneMessage(Round));
             tableIndex++;
-            messages.Add(new Message(DateTime.UtcNow, "roundstart", $"/game/{hash}/rounds/{Round}", new JObject() { { "round", Round } }));
+            messages.Add(new RoundStartMessage(Round));
         }
 
         public User GetUser(string hash)
