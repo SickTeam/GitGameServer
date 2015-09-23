@@ -4,54 +4,71 @@ using System.IO;
 
 namespace GitGameServer
 {
-    public class Message
+    public abstract class Message
     {
         private DateTime timestamp;
-        private string name;
-        private string url;
-        private JObject resource;
 
         public void ToStream(Stream stream)
         {
+            if (this is GuessMessage) stream.WriteByte((byte)'g');
+            if (this is PlayerMessage) stream.WriteByte((byte)'p');
+            if (this is RoundDoneMessage) stream.WriteByte((byte)'d');
+            if (this is RoundStartMessage) stream.WriteByte((byte)'s');
+            if (this is SetupMessage) stream.WriteByte((byte)'e');
+            if (this is StateMessage) stream.WriteByte((byte)'t');
+            else
+                throw new ArgumentException($"Unknown {nameof(Message)} type; {this.GetType().Name}.");
+
             stream.Write(timestamp.ToBinary());
-            stream.Write(name);
-            stream.Write(url);
-            stream.Write(resource != null);
-            if (resource != null)
-                stream.Write(resource.ToString(Newtonsoft.Json.Formatting.None));
+            toStream(stream);
         }
         public static Message FromStream(Stream stream)
         {
-            long ticks = stream.ReadInt64();
-            string name = stream.ReadString();
-            string url = stream.ReadString();
-            bool hasR = stream.ReadBoolean();
+            char type = (char)stream.ReadByte();
+            DateTime timestamp = DateTime.FromBinary(stream.ReadInt64());
 
-            return new Message(DateTime.FromBinary(ticks), name, url, hasR ? JObject.Parse(stream.ReadString()) : null);
+            switch (type)
+            {
+                case 'g': return GuessMessage.FromStream(timestamp, stream);
+                case 'p': return PlayerMessage.FromStream(timestamp, stream);
+                case 'd': return RoundDoneMessage.FromStream(timestamp, stream);
+                case 's': return RoundStartMessage.FromStream(timestamp, stream);
+                case 'e': return SetupMessage.FromStream(timestamp, stream);
+                case 't': return StateMessage.FromStream(timestamp, stream);
+
+                default:
+                    throw new InvalidOperationException($"Unknown message identifier: {type}.");
+            }
         }
+        protected abstract void toStream(Stream stream);
 
-        public Message(DateTime timestamp, string name, string url, JObject resource = null)
+        protected Message(DateTime timestamp)
         {
             this.timestamp = timestamp;
-            this.name = name;
-            this.url = url;
-            this.resource = resource;
+        }
+        protected Message()
+            : this(DateTime.UtcNow)
+        {
+
         }
 
         public DateTime Timestamp => timestamp;
-        public string Name => name;
-        public string URL => url;
-        
-        public JObject ToJObject()
+        public abstract string Name { get; }
+        public abstract string GetURL(string gameid);
+
+        public abstract JToken GetResource();
+
+        public JObject ToJObject(string gameid)
         {
             var obj = new JObject()
             {
-                {"name", name },
-                {"url", url }
+                {"name", Name },
+                {"url", GetURL(gameid) }
             };
 
-            if (resource != null)
-                obj.Add("resource", resource);
+            var res = GetResource();
+            if (res != null)
+                obj.Add("resource", res);
 
             return obj;
         }

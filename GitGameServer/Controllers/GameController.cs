@@ -78,7 +78,7 @@ namespace GitGameServer.Controllers
                 foreach (var c in settings.Contributors)
                     setup.SetContributor(c.Name, c.Active);
 
-                setup.Add(new Message(DateTime.UtcNow, "setup", $"/game/{gameid}/setup", settingsJ));
+                setup.Add(new SetupMessage(settings));
 
                 return Ok();
             }
@@ -111,7 +111,7 @@ namespace GitGameServer.Controllers
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
             {
                 User user = setup.AddUser(username);
-                setup.Add(new Message(DateTime.UtcNow, "players", $"game/{gameid}/players", new JObject() { { "username", username } }));
+                setup.Add(new PlayerMessage(username));
                 return Ok(new { userid = user.Hash });
             }
             else
@@ -133,7 +133,7 @@ namespace GitGameServer.Controllers
                 JObject obj = new JObject()
                 {
                     { "timestamp", time },
-                    { "messages", new JArray(messages.Select(x=>x.ToJObject())) }
+                    { "messages", new JArray(messages.Select(x=>x.ToJObject(gameid))) }
                 };
                 return Ok(obj);
             }
@@ -185,7 +185,7 @@ namespace GitGameServer.Controllers
             var commit = await game.Commits.GetCommit(round - 1);
             if (await commit.Guesses.SetGuess(user.Name, guess.Guess))
             {
-                game.Add(new Message(DateTime.UtcNow, "roundguess", $"/game/{gameid}/rounds/{round}/guesses", new JObject() { { "username", user.Name } }));
+                game.Add(new GuessMessage(round, user.Name));
                 if (commit.Guesses.RoundDone)
                     game.NextRound();
                 return Ok();

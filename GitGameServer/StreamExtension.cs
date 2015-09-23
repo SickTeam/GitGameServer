@@ -13,6 +13,10 @@ namespace GitGameServer
         {
             stream.WriteByte((byte)(value ? 1 : 0));
         }
+        public static void Write(this Stream stream, bool? value)
+        {
+            stream.WriteByte((byte)(value.HasValue ? (value.Value ? 1 : 2) : 0));
+        }
         public static void Write(this Stream stream, int value)
         {
             stream.Write(BitConverter.GetBytes(value), 0, 4);
@@ -40,6 +44,14 @@ namespace GitGameServer
         public static bool ReadBoolean(this Stream stream)
         {
             return stream.ReadByte() != 0;
+        }
+        public static bool? ReadNullBoolean(this Stream stream)
+        {
+            var b = stream.ReadByte();
+            if (b == 0)
+                return null;
+            else
+                return b == 1;
         }
         public static int ReadInt32(this Stream stream)
         {
