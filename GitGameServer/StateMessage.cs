@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
 
 namespace GitGameServer
 {
@@ -15,7 +17,22 @@ namespace GitGameServer
 
         private string state;
         private int round;
-        
+
+        protected override void toStream(Stream stream)
+        {
+            stream.Write(state);
+            stream.Write(round);
+        }
+        public static StateMessage FromStream(DateTime timestamp, Stream stream)
+        {
+            return new StateMessage(timestamp, stream.ReadString(), stream.ReadInt32());
+        }
+
+        private StateMessage(DateTime timestamp, string state, int round)
+            : base(timestamp)
+        {
+            this.round = round;
+        }
         private StateMessage(string state, int round)
         {
             this.state = state;

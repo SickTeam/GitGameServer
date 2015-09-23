@@ -10,7 +10,14 @@ namespace GitGameServer
 
         public void ToStream(Stream stream)
         {
-            throw new ArgumentException($"Unknown {nameof(Message)} type; {this.GetType().Name}.");
+            if (this is GuessMessage) stream.WriteByte((byte)'g');
+            if (this is PlayerMessage) stream.WriteByte((byte)'p');
+            if (this is RoundDoneMessage) stream.WriteByte((byte)'d');
+            if (this is RoundStartMessage) stream.WriteByte((byte)'s');
+            if (this is SetupMessage) stream.WriteByte((byte)'e');
+            if (this is StateMessage) stream.WriteByte((byte)'t');
+            else
+                throw new ArgumentException($"Unknown {nameof(Message)} type; {this.GetType().Name}.");
 
             stream.Write(timestamp.ToBinary());
             toStream(stream);
@@ -22,6 +29,13 @@ namespace GitGameServer
 
             switch (type)
             {
+                case 'g': return GuessMessage.FromStream(timestamp, stream);
+                case 'p': return PlayerMessage.FromStream(timestamp, stream);
+                case 'd': return RoundDoneMessage.FromStream(timestamp, stream);
+                case 's': return RoundStartMessage.FromStream(timestamp, stream);
+                case 'e': return SetupMessage.FromStream(timestamp, stream);
+                case 't': return StateMessage.FromStream(timestamp, stream);
+
                 default:
                     throw new InvalidOperationException($"Unknown message identifier: {type}.");
             }
