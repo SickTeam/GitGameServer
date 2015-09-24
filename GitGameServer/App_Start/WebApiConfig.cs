@@ -1,4 +1,5 @@
 ﻿using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace GitGameServer
 {
@@ -7,6 +8,8 @@ namespace GitGameServer
         public static void Register(HttpConfiguration config)
         {
             config.MapHttpAttributeRoutes();
+            var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(cors);
         }
     }
 }
