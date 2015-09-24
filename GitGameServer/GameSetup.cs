@@ -99,9 +99,9 @@ namespace GitGameServer
             List<Models.Contributor> list = new List<Models.Contributor>();
             foreach (var c in commits)
             {
-                var con = list.Find(x => x.Name == c.Commit.Committer.Name);
+                var con = list.Find(x => x.Name == c.Author.Login);
                 if (con == null)
-                    list.Add(new Models.Contributor(c.Commit.Committer.Name) { Active = filter(c) });
+                    list.Add(new Models.Contributor(c.Author.Login) { Active = filter(c) });
                 else if (!con.Active && filter(c))
                     con.Active = true;
             }
