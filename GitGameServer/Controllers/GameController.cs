@@ -104,6 +104,19 @@ namespace GitGameServer.Controllers
         }
 
         [Route("game/{gameid}/players")]
+        [HttpGet]
+        public IHttpActionResult GetUsers([FromUri]string gameid)
+        {
+            GameSetup setup;
+            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+            {
+                return Ok(setup.GetUsers().Select(x => new { Name = x.Name }));
+            }
+            else
+                return BadRequest("No game with " + nameof(gameid) + " was found.");
+        }
+
+        [Route("game/{gameid}/players")]
         [HttpPost]
         public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
         {
