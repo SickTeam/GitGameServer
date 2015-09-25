@@ -123,7 +123,7 @@ namespace GitGameServer
             this.repository = repo;
         }
 
-        string IGame.State => "started";
+        string IGame.State => tableIndex >= rowCount ? "started" : "finished";
         IEnumerable<Message> IGame.GetMessages()
         {
             foreach (var m in messages)
@@ -143,7 +143,10 @@ namespace GitGameServer
         {
             messages.Add(new RoundDoneMessage(Round));
             tableIndex++;
-            messages.Add(new RoundStartMessage(Round));
+            if (tableIndex >= rowCount)
+                messages.Add(StateMessage.CreateFinished());
+            else
+                messages.Add(new RoundStartMessage(Round));
         }
 
         public User GetUser(string hash)
