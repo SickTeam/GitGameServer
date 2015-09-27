@@ -160,7 +160,11 @@ namespace GitGameServer.Controllers
         {
             IGame game;
             if (GameManager.Singleton.TryGetGame(gameid, out game))
-                return Ok(new { state = game.State });
+                return Ok(new
+                {
+                    state = game.State,
+                    round = game.GetType() == typeof(Game) ? (game as Game).Round : 0
+                });
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
