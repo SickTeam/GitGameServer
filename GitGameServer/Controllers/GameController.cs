@@ -29,7 +29,7 @@ namespace GitGameServer.Controllers
             GameManager.Singleton.AddSetup(setup);
             var user = setup.AddUser(info.Username);
 
-            return Ok(new { gameid = setup.Hash, userid = user.Hash });
+            return Ok(new { gameId = setup.Hash, userId = user.Hash });
         }
 
         [Route("game/{gameid}/setup")]
@@ -46,8 +46,8 @@ namespace GitGameServer.Controllers
             return Ok(new
             {
                 contributors = setup.GetContributors(),
-                excludemerges = settings.HasFlag(GameSettings.ExcludeMerges),
-                lowercase = settings.HasFlag(GameSettings.LowerCase)
+                excludeMerges = settings.HasFlag(GameSettings.ExcludeMerges),
+                lowerCase = settings.HasFlag(GameSettings.LowerCase)
             });
         }
         [Route("game/{gameid}/setup")]
@@ -59,9 +59,9 @@ namespace GitGameServer.Controllers
             {
                 JObject settingsJ = new JObject();
                 if (settings.ExcludeMerges.HasValue)
-                    settingsJ.Add("excludemerges", settings.ExcludeMerges);
+                    settingsJ.Add("excludeMerges", settings.ExcludeMerges);
                 if (settings.LowerCase.HasValue)
-                    settingsJ.Add("lowercase", settings.LowerCase);
+                    settingsJ.Add("lowerCase", settings.LowerCase);
 
                 if (settings.Contributors.Length > 0)
                 {
@@ -110,7 +110,7 @@ namespace GitGameServer.Controllers
             GameSetup setup;
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
             {
-                return Ok(setup.GetUsers().Select(x => new { Name = x.Name }));
+                return Ok(setup.GetUsers().Select(x => new { name = x.Name }));
             }
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
@@ -125,7 +125,7 @@ namespace GitGameServer.Controllers
             {
                 User user = setup.AddUser(username);
                 setup.Add(new PlayerMessage(username));
-                return Ok(new { userid = user.Hash });
+                return Ok(new { userId = user.Hash });
             }
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
@@ -228,7 +228,7 @@ namespace GitGameServer.Controllers
                 JObject obj = new JObject()
                 {
                     { "name", u },
-                    { "hasguess", hasguess }
+                    { "hasGuess", hasguess }
                 };
 
                 if (game.Round > round)
@@ -255,13 +255,13 @@ namespace GitGameServer.Controllers
             JObject obj = new JObject()
             {
                 { "message", commit.Message },
-                { "linesadd", commit.Added },
-                { "linesremove", commit.Removed }
+                { "linesAdded", commit.Added },
+                { "linesRemoved", commit.Removed }
             };
 
             if (game.Round > round)
             {
-                obj.Add("comitter", commit.Username);
+                obj.Add("committer", commit.Username);
                 obj.Add("sha", commit.Sha);
             }
 
