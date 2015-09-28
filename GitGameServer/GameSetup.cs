@@ -85,6 +85,10 @@ namespace GitGameServer
             this.users.Add(user);
             return user;
         }
+        public User Getuser(string userhash)
+        {
+            return users.FirstOrDefault(x => x.Hash == userhash);
+        }
 
         public void SetSettings(Models.GameSettings change)
         {
