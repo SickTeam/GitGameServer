@@ -28,6 +28,56 @@ namespace GitGameServer.Controllers
                 return ResponseMessage(new HttpResponseMessage(HttpStatusCode.NotFound)
                 { ReasonPhrase = $@"No game with id ""{gameid}"" was found." });
         }
+        private async Task<IHttpActionResult> useGame<T>(string gameid, Func<T, Task<IHttpActionResult>> method) where T : IGame
+        {
+            IGame game;
+            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            {
+                if (game is T)
+                    return await method((T)game);
+                else
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Forbidden)
+                    { ReasonPhrase = $@"Game is currently in state ""{game.State}"" which does not support your current request." });
+            }
+            else
+                return ResponseMessage(new HttpResponseMessage(HttpStatusCode.NotFound)
+                { ReasonPhrase = $@"No game with id ""{gameid}"" was found." });
+        }
+
+        private IHttpActionResult loggedIn<T>(string gameid, Func<T, User, IHttpActionResult> method) where T : IGame
+        {
+            return useGame<T>(gameid, game =>
+            {
+                var userhash = Request.Headers.Authorization.Scheme;
+                if (userhash == null || userhash.Length == 0)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = "Missing user identifier." });
+
+                User user = game.GetUser(userhash);
+                if (user == null)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = $"Unknown user identifier: {userhash}." });
+
+                return method(game, user);
+            });
+        }
+        private async Task<IHttpActionResult> loggedIn<T>(string gameid, Func<T, User, Task<IHttpActionResult>> method) where T : IGame
+        {
+            return await useGame<T>(gameid, async game =>
+            {
+                var userhash = Request.Headers.Authorization.Scheme;
+                if (userhash == null || userhash.Length == 0)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = "Missing user identifier." });
+
+                User user = game.GetUser(userhash);
+                if (user == null)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = $"Unknown user identifier: {userhash}." });
+
+                return await method(game, user);
+            });
+        }
 
         [Route("game")]
         [HttpPost]
