@@ -25,7 +25,7 @@ namespace GitGameServer
 
         private List<Models.Contributor> contributors;
         private List<User> users;
-        
+
         public GameSetup(string owner, string repo, string token, IEnumerable<Octokit.GitHubCommit> commits)
         {
             this.hash = HashHelper.GetMD5($"{owner}/{repo}");
@@ -77,7 +77,27 @@ namespace GitGameServer
             this.users.Add(user);
             return user;
         }
-        public void SetContributor(string name, bool active)
+
+        public void SetSettings(Models.GameSettings change)
+        {
+            if (change.ExcludeMerges.HasValue)
+                if (change.ExcludeMerges.Value)
+                    settings |= GameSettings.ExcludeMerges;
+                else
+                    settings &= ~GameSettings.ExcludeMerges;
+
+            if (change.LowerCase.HasValue)
+                if (change.LowerCase.Value)
+                    settings |= GameSettings.LowerCase;
+                else
+                    settings &= ~GameSettings.LowerCase;
+
+            foreach (var c in change.Contributors)
+                setContributor(c.Name, c.Active);
+
+            this.messages.Add(new SetupMessage(change));
+        }
+        private void setContributor(string name, bool active)
         {
             for (int i = 0; i < contributors.Count; i++)
                 if (contributors[i].Name == name)

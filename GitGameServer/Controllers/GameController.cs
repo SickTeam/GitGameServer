@@ -54,37 +54,14 @@ namespace GitGameServer.Controllers
                     settingsJ.Add("contributors", cArr);
                 }
 
-                setup.Settings = SetFlag(setup.Settings, GameSettings.ExcludeMerges, settings.ExcludeMerges);
-                setup.Settings = SetFlag(setup.Settings, GameSettings.LowerCase, settings.LowerCase);
-
-                foreach (var c in settings.Contributors)
-                    setup.SetContributor(c.Name, c.Active);
-
-                setup.Add(new SetupMessage(settings));
-
+                setup.SetSettings(settings);
+                
                 return Ok();
             }
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
-
-        public GameSettings SetFlag(GameSettings value, GameSettings flag, bool? on)
-        {
-            if (on.HasValue)
-            {
-                int v = (int)value;
-                int f = (int)flag;
-
-                if (on.Value)
-                    v |= f;
-                else
-                    v &= ~f;
-
-                value = (GameSettings)v;
-            }
-            return value;
-        }
-
+        
         [Route("game/{gameid}/players")]
         [HttpPost]
         public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
