@@ -11,6 +11,23 @@ namespace GitGameServer.Controllers
     [RoutePrefix("woot")]
     public class GameController : ApiController
     {
+        private IHttpActionResult useGame(string gameid, Func<IGame, IHttpActionResult> method) => useGame<IGame>(gameid, method);
+        private IHttpActionResult useGame<T>(string gameid, Func<T, IHttpActionResult> method) where T : IGame
+        {
+            IGame game;
+            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            {
+                if (game is T)
+                    return method((T)game);
+                else
+                    return ResponseMessage(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden)
+                    { ReasonPhrase = $@"Game is currently in state ""{game.State}"" which does not support your current request." });
+            }
+            else
+                return ResponseMessage(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
+                { ReasonPhrase = $@"No game with id ""{gameid}"" was found." });
+        }
+
         [Route("game")]
         [HttpPost]
         public async Task<IHttpActionResult> CreateGame([FromBody]CreateGameInfo info)
