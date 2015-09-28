@@ -8,6 +8,8 @@ namespace GitGameServer
     {
         string State { get; }
 
+        User GetUser(string userhash);
+
         IEnumerable<Message> GetMessages();
     }
 

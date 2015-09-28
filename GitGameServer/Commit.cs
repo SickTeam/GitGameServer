@@ -18,7 +18,7 @@ namespace GitGameServer
 
             private int added, removed;
 
-            private GuessCollection guesses;
+            private byte[] guesses;
 
             public Commit(Game game, string sha, string message, string username, int added, int removed, byte[] guesses)
             {
@@ -32,7 +32,7 @@ namespace GitGameServer
                 this.added = added;
                 this.removed = removed;
 
-                this.guesses = new GuessCollection(this, guesses);
+                this.guesses = guesses;
             }
 
             public string Sha => sha;
@@ -43,65 +43,54 @@ namespace GitGameServer
             public int Added => added;
             public int Removed => removed;
 
-            public GuessCollection Guesses => guesses;
+            public bool RoundDone => guesses.All(x => x != 0);
 
-            public class GuessCollection
+            public bool GetGuess(string username, out string guess)
             {
-                private Commit commit;
-                private byte[] guesses;
-
-                public GuessCollection(Commit commit, byte[] guesses)
+                int user = Array.FindIndex(game.users, x => x.Name == username);
+                if (user >= 0)
                 {
-                    this.commit = commit;
-                    this.guesses = guesses;
-                }
-
-                public bool RoundDone => guesses.All(x => x != 0);
-
-                public bool GetGuess(string username, out string guess)
-                {
-                    int user = Array.FindIndex(commit.game.users, x => x.Name == username);
-                    if (user >= 0)
-                    {
-                        guess = guesses[user] == 0 ? null : commit.game.contributors[user];
-                        return true;
-                    }
-                    else
-                    {
-                        guess = null;
-                        return false;
-                    }
-                }
-                public async Task<bool> SetGuess(string username, string guess)
-                {
-                    if (await commit.game.commits.GetCommit(commit.game.tableIndex) != commit)
-                        return false;
-
-                    int user = Array.FindIndex(commit.game.users, x => x.Name == username);
-                    if (user == -1)
-                        return false;
-
-                    if (guesses[user] != 0)
-                        return false;
-
-                    int g = Array.IndexOf(commit.game.contributors, guess);
-                    if (g == -1)
-                        return false;
-
-                    guesses[user] = (byte)(g + 1);
-                    using (FileStream fs = new FileStream(commit.game.path, FileMode.Open, FileAccess.ReadWrite))
-                    {
-                        long offset = commit.game.tableStart + commit.game.tableIndex * commit.game.rowSize;
-                        fs.Seek(offset + 40 + user, SeekOrigin.Begin);
-                        var existing = fs.ReadByte();
-                        if (existing > 0)
-                            return false;
-                        fs.Seek(-1, SeekOrigin.Current);
-                        fs.WriteByte(guesses[user]);
-                    }
-
+                    guess = guesses[user] == 0 ? null : game.contributors[user];
                     return true;
                 }
+                else
+                {
+                    guess = null;
+                    return false;
+                }
+            }
+            public async Task<bool> SetGuess(string username, string guess)
+            {
+                int index = game.tableIndex;
+
+                if (await game.commits.GetCommit(index) != this)
+                    return false;
+
+                int user = Array.FindIndex(game.users, x => x.Name == username);
+                if (user == -1)
+                    return false;
+
+                if (guesses[user] != 0)
+                    return false;
+
+                int g = Array.IndexOf(game.contributors, guess);
+                if (g == -1)
+                    return false;
+
+                guesses[user] = (byte)(g + 1);
+                using (FileStream fs = new FileStream(game.path, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    long offset = game.tableStart + index * game.rowSize;
+                    fs.Seek(offset + 40 + user, SeekOrigin.Begin);
+                    fs.WriteByte(guesses[user]);
+                }
+
+                game.Add(new GuessMessage(index + 1, username));
+
+                if (RoundDone)
+                    game.NextRound();
+
+                return true;
             }
         }
     }

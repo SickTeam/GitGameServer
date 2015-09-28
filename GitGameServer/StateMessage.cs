@@ -6,6 +6,10 @@ namespace GitGameServer
 {
     public class StateMessage : Message
     {
+        public static StateMessage CreateSetup()
+        {
+            return new StateMessage("setup");
+        }
         public static StateMessage CreateStarted()
         {
             return new StateMessage("started");

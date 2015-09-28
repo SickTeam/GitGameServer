@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using Octokit;
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -11,6 +13,72 @@ namespace GitGameServer.Controllers
     [RoutePrefix("woot")]
     public class GameController : ApiController
     {
+        private IHttpActionResult useGame<T>(string gameid, Func<T, IHttpActionResult> method) where T : IGame
+        {
+            IGame game;
+            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            {
+                if (game is T)
+                    return method((T)game);
+                else
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Forbidden)
+                    { ReasonPhrase = $@"Game is currently in state ""{game.State}"" which does not support your current request." });
+            }
+            else
+                return ResponseMessage(new HttpResponseMessage(HttpStatusCode.NotFound)
+                { ReasonPhrase = $@"No game with id ""{gameid}"" was found." });
+        }
+        private async Task<IHttpActionResult> useGame<T>(string gameid, Func<T, Task<IHttpActionResult>> method) where T : IGame
+        {
+            IGame game;
+            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            {
+                if (game is T)
+                    return await method((T)game);
+                else
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Forbidden)
+                    { ReasonPhrase = $@"Game is currently in state ""{game.State}"" which does not support your current request." });
+            }
+            else
+                return ResponseMessage(new HttpResponseMessage(HttpStatusCode.NotFound)
+                { ReasonPhrase = $@"No game with id ""{gameid}"" was found." });
+        }
+
+        private IHttpActionResult loggedIn<T>(string gameid, Func<T, User, IHttpActionResult> method) where T : IGame
+        {
+            return useGame<T>(gameid, game =>
+            {
+                var userhash = Request.Headers.Authorization.Scheme;
+                if (userhash == null || userhash.Length == 0)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = "Missing user identifier." });
+
+                User user = game.GetUser(userhash);
+                if (user == null)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = $"Unknown user identifier: {userhash}." });
+
+                return method(game, user);
+            });
+        }
+        private async Task<IHttpActionResult> loggedIn<T>(string gameid, Func<T, User, Task<IHttpActionResult>> method) where T : IGame
+        {
+            return await useGame<T>(gameid, async game =>
+            {
+                var userhash = Request.Headers.Authorization.Scheme;
+                if (userhash == null || userhash.Length == 0)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = "Missing user identifier." });
+
+                User user = game.GetUser(userhash);
+                if (user == null)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = $"Unknown user identifier: {userhash}." });
+
+                return await method(game, user);
+            });
+        }
+
         [Route("game")]
         [HttpPost]
         public async Task<IHttpActionResult> CreateGame([FromBody]CreateGameInfo info)
@@ -33,243 +101,84 @@ namespace GitGameServer.Controllers
         }
 
         [Route("game/{gameid}/setup")]
-        [HttpGet]
-        public IHttpActionResult GetSetup([FromUri]string gameid)
-        {
-            GameSettings settings;
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-                settings = setup.Settings;
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
-
-            return Ok(new
-            {
-                contributors = setup.GetContributors(),
-                excludeMerges = settings.HasFlag(GameSettings.ExcludeMerges),
-                lowerCase = settings.HasFlag(GameSettings.LowerCase)
-            });
-        }
-        [Route("game/{gameid}/setup")]
         [HttpPut]
         public IHttpActionResult SetSetup([FromUri]string gameid, [FromBody]Models.GameSettings settings)
         {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+            return loggedIn<GameSetup>(gameid, (game, user) =>
             {
-                JObject settingsJ = new JObject();
-                if (settings.ExcludeMerges.HasValue)
-                    settingsJ.Add("excludeMerges", settings.ExcludeMerges);
-                if (settings.LowerCase.HasValue)
-                    settingsJ.Add("lowerCase", settings.LowerCase);
+                if (!game.IsCreator(user))
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = "Only the game creator can change game settings." });
 
-                if (settings.Contributors.Length > 0)
-                {
-                    var cArr = new JArray();
-                    foreach (var c in settings.Contributors)
-                        cArr.Add(new JObject() { { "name", c.Name }, { "active", c.Active } });
-
-                    settingsJ.Add("contributors", cArr);
-                }
-
-                setup.Settings = SetFlag(setup.Settings, GameSettings.ExcludeMerges, settings.ExcludeMerges);
-                setup.Settings = SetFlag(setup.Settings, GameSettings.LowerCase, settings.LowerCase);
-
-                foreach (var c in settings.Contributors)
-                    setup.SetContributor(c.Name, c.Active);
-
-                setup.Add(new SetupMessage(settings));
-
+                game.SetSettings(settings);
                 return Ok();
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
-        }
-
-        public GameSettings SetFlag(GameSettings value, GameSettings flag, bool? on)
-        {
-            if (on.HasValue)
-            {
-                int v = (int)value;
-                int f = (int)flag;
-
-                if (on.Value)
-                    v |= f;
-                else
-                    v &= ~f;
-
-                value = (GameSettings)v;
-            }
-            return value;
-        }
-
-        [Route("game/{gameid}/players")]
-        [HttpGet]
-        public IHttpActionResult GetUsers([FromUri]string gameid)
-        {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-            {
-                return Ok(setup.GetUsers().Select(x => new { name = x.Name }));
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            });
         }
 
         [Route("game/{gameid}/players")]
         [HttpPost]
         public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
         {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-            {
-                User user = setup.AddUser(username);
-                setup.Add(new PlayerMessage(username));
-                return Ok(new { userId = user.Hash });
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            return useGame<GameSetup>(gameid, game => Ok(new { userId = game.AddUser(username).Hash }));
         }
 
         [Route("game/{gameid}/messages")]
         [HttpGet]
         public IHttpActionResult GetMessages([FromUri]string gameid)
         {
-            var modoffset = Request.Headers.IfModifiedSince;
-            var mod = modoffset?.UtcDateTime;
-
-            IGame game;
-            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            return loggedIn<IGame>(gameid, (game, user) =>
             {
-                var messages = mod.HasValue ? game.GetMessagesSince(mod.Value) : game.GetMessages();
-                var time = DateTime.UtcNow;
-                JObject obj = new JObject()
+                var modified = Request.Headers.IfModifiedSince?.UtcDateTime;
+                var messages = modified.HasValue ? game.GetMessagesSince(modified.Value) : game.GetMessages();
+
+                return Ok(new
                 {
-                    { "timestamp", time },
-                    { "messages", new JArray(messages.Select(x=>x.ToJObject(gameid))) }
-                };
-                return Ok(obj);
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+                    timestamp = DateTime.UtcNow,
+                    messages = messages.Select(x => x.ToJObject(gameid)).ToArray()
+                });
+            });
         }
 
         [Route("game/{gameid}/state")]
         [HttpGet]
         public IHttpActionResult GetState([FromUri]string gameid)
         {
-            IGame game;
-            if (GameManager.Singleton.TryGetGame(gameid, out game))
-                return Ok(new
-                {
-                    state = game.State,
-                    round = game.GetType() == typeof(Game) ? (game as Game).Round : 0
-                });
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            return useGame<IGame>(gameid, game => Ok(new { state = game.State }));
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
         public IHttpActionResult SetState([FromUri]string gameid, [FromBody]SetStates? state)
         {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-            {
-                if (state == SetStates.start)
-                {
-                    GameManager.Singleton.StartGame(setup);
-                    return Ok();
-                }
-                else
-                    return BadRequest("Invalid game state.");
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            return loggedIn<GameSetup>(gameid, (game, user) =>
+             {
+                 if (!game.IsCreator(user))
+                     return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                     { ReasonPhrase = "Only the game creator can change the game state." });
+
+                 if (state != SetStates.start)
+                     return BadRequest("Game state can only be set to start (when starting the game).");
+
+                 GameManager.Singleton.StartGame(game);
+                 return Ok();
+             });
         }
 
         [Route("game/{gameid}/rounds/{round}/guesses")]
         [HttpPost]
         public async Task<IHttpActionResult> MakeGuess([FromUri]string gameid, [FromUri]int round, [FromBody]GuessInput guess)
         {
-            var userhash = Request.Headers.Authorization.Scheme;
-            /* send: { guess: "mikaelec" } */
-            Game game;
-            if (!GameManager.Singleton.TryGetGame(gameid, out game))
-                return BadRequest($"No game with {nameof(gameid)} was found.");
-
-            var user = game.GetUser(userhash);
-
-            var commit = await game.Commits.GetCommit(round - 1);
-            if (await commit.Guesses.SetGuess(user.Name, guess.Guess))
+            return await loggedIn<Game>(gameid, async (game, user) =>
             {
-                game.Add(new GuessMessage(round, user.Name));
-                if (commit.Guesses.RoundDone)
-                    game.NextRound();
-                return Ok();
-            }
-            else
-                return BadRequest();
-        }
+                if (round != game.Round)
+                    return BadRequest($"Request can only be made to the active round; round {game.Round}.");
 
-        [Route("game/{gameid}/rounds/{round}/guesses")]
-        [HttpGet]
-        public async Task<IHttpActionResult> GetGuesses([FromUri]string gameid, [FromUri]int round)
-        {
-            Game game;
-            if (!GameManager.Singleton.TryGetGame(gameid, out game))
-                return BadRequest($"No game with {nameof(gameid)} was found.");
+                var commit = await game.Commits.GetCommit(round - 1);
 
-            JArray arr = new JArray();
-
-            var commit = await game.Commits.GetCommit(round - 1);
-            foreach (var u in game.GetUserNames())
-            {
-                string guess;
-                if (!commit.Guesses.GetGuess(u, out guess))
-                    continue;
-                bool hasguess = guess != null;
-
-                JObject obj = new JObject()
-                {
-                    { "name", u },
-                    { "hasGuess", hasguess }
-                };
-
-                if (game.Round > round)
-                    obj.Add("guess", guess);
-
-                arr.Add(obj);
-            }
-
-            return Ok(arr);
-        }
-
-        [Route("game/{gameid}/rounds/{round}")]
-        [HttpGet]
-        public async Task<IHttpActionResult> GetRound([FromUri]string gameid, [FromUri]int round)
-        {
-            Game game;
-            if (!GameManager.Singleton.TryGetGame(gameid, out game))
-                return BadRequest($"No game with {nameof(gameid)} was found.");
-
-            JArray arr = new JArray();
-
-            var commit = await game.Commits.GetCommit(round - 1);
-
-            JObject obj = new JObject()
-            {
-                { "message", commit.Message },
-                { "linesAdded", commit.Added },
-                { "linesRemoved", commit.Removed }
-            };
-
-            if (game.Round > round)
-            {
-                obj.Add("committer", commit.Username);
-                obj.Add("sha", commit.Sha);
-            }
-
-            return Ok(obj);
+                if (await commit.SetGuess(user.Name, guess.Guess))
+                    return Ok();
+                else
+                    return InternalServerError();
+            });
         }
     }
 }
