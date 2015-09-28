@@ -47,7 +47,7 @@ namespace GitGameServer
 
         string IGame.State => "setup";
         IEnumerable<Message> IGame.GetMessages() { foreach (var m in messages) yield return m; }
-        public void Add(Message message)
+        private void Add(Message message)
         {
             this.messages.Add(message);
         }

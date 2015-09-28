@@ -129,7 +129,7 @@ namespace GitGameServer
             foreach (var m in messages)
                 yield return m;
         }
-        public void Add(Message message)
+        private void Add(Message message)
         {
             this.messages.Add(message);
         }
