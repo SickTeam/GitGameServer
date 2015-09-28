@@ -124,9 +124,9 @@ namespace GitGameServer.Controllers
             var user = game.GetUser(userhash);
 
             var commit = await game.Commits.GetCommit(round - 1);
-            if (await commit.Guesses.SetGuess(user.Name, guess.Guess))
+            if (await commit.SetGuess(user.Name, guess.Guess))
             {
-                if (commit.Guesses.RoundDone)
+                if (commit.RoundDone)
                     game.NextRound();
                 return Ok();
             }
