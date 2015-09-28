@@ -39,6 +39,7 @@ namespace GitGameServer
             this.count = commits.Count(filter);
 
             this.messages = new List<Message>();
+            this.messages.Add(StateMessage.CreateSetup());
 
             this.contributors = new List<Models.Contributor>();
             this.users = new List<User>();
