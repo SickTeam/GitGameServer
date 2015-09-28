@@ -74,7 +74,9 @@ namespace GitGameServer
                 }
                 public async Task<bool> SetGuess(string username, string guess)
                 {
-                    if (await commit.game.commits.GetCommit(commit.game.tableIndex) != commit)
+                    int index = commit.game.tableIndex;
+
+                    if (await commit.game.commits.GetCommit(index) != commit)
                         return false;
 
                     int user = Array.FindIndex(commit.game.users, x => x.Name == username);
@@ -91,10 +93,12 @@ namespace GitGameServer
                     guesses[user] = (byte)(g + 1);
                     using (FileStream fs = new FileStream(commit.game.path, FileMode.Open, FileAccess.ReadWrite))
                     {
-                        long offset = commit.game.tableStart + commit.game.tableIndex * commit.game.rowSize;
+                        long offset = commit.game.tableStart + index * commit.game.rowSize;
                         fs.Seek(offset + 40 + user, SeekOrigin.Begin);
                         fs.WriteByte(guesses[user]);
                     }
+
+                    commit.game.Add(new GuessMessage(index + 1, username));
 
                     return true;
                 }
