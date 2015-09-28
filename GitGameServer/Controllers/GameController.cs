@@ -104,8 +104,12 @@ namespace GitGameServer.Controllers
         [HttpPut]
         public IHttpActionResult SetSetup([FromUri]string gameid, [FromBody]Models.GameSettings settings)
         {
-            return useGame<GameSetup>(gameid, game =>
+            return loggedIn<GameSetup>(gameid, (game, user) =>
             {
+                if (!game.IsCreator(user))
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                    { ReasonPhrase = "Only the game creator can change game settings." });
+
                 game.SetSettings(settings);
                 return Ok();
             });

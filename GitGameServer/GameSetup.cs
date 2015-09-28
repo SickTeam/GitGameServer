@@ -78,6 +78,11 @@ namespace GitGameServer
             }
         }
 
+        public bool IsCreator(User user)
+        {
+            return users[0].Hash == user.Hash;
+        }
+
         public User AddUser(string username)
         {
             var user = User.Create(username);
