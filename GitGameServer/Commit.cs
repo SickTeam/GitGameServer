@@ -87,6 +87,9 @@ namespace GitGameServer
 
                 game.Add(new GuessMessage(index + 1, username));
 
+                if (RoundDone)
+                    game.NextRound();
+
                 return true;
             }
         }
