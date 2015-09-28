@@ -43,6 +43,14 @@ namespace GitGameServer
 
             this.contributors = new List<Models.Contributor>();
             this.users = new List<User>();
+
+            Models.GameSettings settings = new Models.GameSettings();
+
+            settings.ExcludeMerges = false;
+            settings.LowerCase = false;
+            settings.Contributors = GetContributors().Select(x => new Models.GameSettings.Contributor() { Name = x.Name, Active = x.Active }).ToArray();
+
+            this.SetSettings(new Models.GameSettings() { });
         }
 
         string IGame.State => "setup";
