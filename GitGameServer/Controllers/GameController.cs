@@ -13,7 +13,6 @@ namespace GitGameServer.Controllers
     [RoutePrefix("woot")]
     public class GameController : ApiController
     {
-        private IHttpActionResult useGame(string gameid, Func<IGame, IHttpActionResult> method) => useGame<IGame>(gameid, method);
         private IHttpActionResult useGame<T>(string gameid, Func<T, IHttpActionResult> method) where T : IGame
         {
             IGame game;
@@ -73,7 +72,7 @@ namespace GitGameServer.Controllers
         [HttpGet]
         public IHttpActionResult GetMessages([FromUri]string gameid)
         {
-            return useGame(gameid, game =>
+            return useGame<IGame>(gameid, game =>
             {
                 var modified = Request.Headers.IfModifiedSince?.UtcDateTime;
                 var messages = modified.HasValue ? game.GetMessagesSince(modified.Value) : game.GetMessages();
@@ -90,7 +89,7 @@ namespace GitGameServer.Controllers
         [HttpGet]
         public IHttpActionResult GetState([FromUri]string gameid)
         {
-            return useGame(gameid, game => Ok(new { state = game.State }));
+            return useGame<IGame>(gameid, game => Ok(new { state = game.State }));
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
