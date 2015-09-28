@@ -73,6 +73,7 @@ namespace GitGameServer
         public User AddUser(string username)
         {
             var user = User.Create(username);
+            Add(new PlayerMessage(username));
             this.users.Add(user);
             return user;
         }

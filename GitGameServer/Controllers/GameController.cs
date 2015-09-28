@@ -93,7 +93,6 @@ namespace GitGameServer.Controllers
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
             {
                 User user = setup.AddUser(username);
-                setup.Add(new PlayerMessage(username));
                 return Ok(new { userId = user.Hash });
             }
             else
