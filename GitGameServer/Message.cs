@@ -11,11 +11,11 @@ namespace GitGameServer
         public void ToStream(Stream stream)
         {
             if (this is GuessMessage) stream.WriteByte((byte)'g');
-            if (this is PlayerMessage) stream.WriteByte((byte)'p');
-            if (this is RoundDoneMessage) stream.WriteByte((byte)'d');
-            if (this is RoundStartMessage) stream.WriteByte((byte)'s');
-            if (this is SetupMessage) stream.WriteByte((byte)'e');
-            if (this is StateMessage) stream.WriteByte((byte)'t');
+            else if (this is PlayerMessage) stream.WriteByte((byte)'p');
+            else if (this is RoundDoneMessage) stream.WriteByte((byte)'d');
+            else if (this is RoundStartMessage) stream.WriteByte((byte)'s');
+            else if (this is SetupMessage) stream.WriteByte((byte)'e');
+            else if (this is StateMessage) stream.WriteByte((byte)'t');
             else
                 throw new ArgumentException($"Unknown {nameof(Message)} type; {this.GetType().Name}.");
 
