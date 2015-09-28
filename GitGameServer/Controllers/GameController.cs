@@ -170,7 +170,7 @@ namespace GitGameServer.Controllers
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
-        public IHttpActionResult SetState([FromUri]string gameid, [FromBody]SetStates state)
+        public IHttpActionResult SetState([FromUri]string gameid, [FromBody]SetStates? state)
         {
             GameSetup setup;
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
