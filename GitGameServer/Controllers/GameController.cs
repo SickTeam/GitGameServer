@@ -39,29 +39,13 @@ namespace GitGameServer.Controllers
             GameSetup setup;
             if (GameManager.Singleton.TryGetSetup(gameid, out setup))
             {
-                JObject settingsJ = new JObject();
-                if (settings.ExcludeMerges.HasValue)
-                    settingsJ.Add("excludeMerges", settings.ExcludeMerges);
-                if (settings.LowerCase.HasValue)
-                    settingsJ.Add("lowerCase", settings.LowerCase);
-
-                if (settings.Contributors.Length > 0)
-                {
-                    var cArr = new JArray();
-                    foreach (var c in settings.Contributors)
-                        cArr.Add(new JObject() { { "name", c.Name }, { "active", c.Active } });
-
-                    settingsJ.Add("contributors", cArr);
-                }
-
                 setup.SetSettings(settings);
-                
                 return Ok();
             }
             else
                 return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
-        
+
         [Route("game/{gameid}/players")]
         [HttpPost]
         public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
