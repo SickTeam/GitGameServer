@@ -126,7 +126,7 @@ namespace GitGameServer.Controllers
         [HttpGet]
         public IHttpActionResult GetMessages([FromUri]string gameid)
         {
-            return useGame<IGame>(gameid, game =>
+            return loggedIn<IGame>(gameid, (game, user) =>
             {
                 var modified = Request.Headers.IfModifiedSince?.UtcDateTime;
                 var messages = modified.HasValue ? game.GetMessagesSince(modified.Value) : game.GetMessages();
@@ -173,7 +173,7 @@ namespace GitGameServer.Controllers
                 if (round != game.Round)
                     return BadRequest($"Request can only be made to the active round; round {game.Round}.");
 
-                    var commit = await game.Commits.GetCommit(round - 1);
+                var commit = await game.Commits.GetCommit(round - 1);
 
                 if (await commit.SetGuess(user.Name, guess.Guess))
                     return Ok();
