@@ -61,7 +61,12 @@ namespace GitGameServer
                     m.ToStream(fs);
             }
 
-            return Game.FromFile(filepath);
+            var game = Game.FromFile(filepath);
+
+            game.Add(StateMessage.CreateStarted());
+            game.Add(new RoundStartMessage(1));
+
+            return game;
         }
         public static Game FromFile(string filepath)
         {
