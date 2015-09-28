@@ -123,7 +123,7 @@ namespace GitGameServer
             this.repository = repo;
         }
 
-        string IGame.State => tableIndex >= rowCount ? "started" : "finished";
+        string IGame.State => tableIndex >= rowCount ? "finished" : "started";
         IEnumerable<Message> IGame.GetMessages()
         {
             foreach (var m in messages)
