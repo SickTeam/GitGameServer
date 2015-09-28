@@ -164,19 +164,18 @@ namespace GitGameServer.Controllers
         [HttpPost]
         public async Task<IHttpActionResult> MakeGuess([FromUri]string gameid, [FromUri]int round, [FromBody]GuessInput guess)
         {
-            var userhash = Request.Headers.Authorization.Scheme;
+            return await loggedIn<Game>(gameid, async (game, user) =>
+            {
+                if (round != game.Round)
+                    return BadRequest($"Request can only be made to the active round; round {game.Round}.");
 
-            Game game;
-            if (!GameManager.Singleton.TryGetGame(gameid, out game))
-                return BadRequest($"No game with {nameof(gameid)} was found.");
+                    var commit = await game.Commits.GetCommit(round - 1);
 
-            var user = game.GetUser(userhash);
-
-            var commit = await game.Commits.GetCommit(round - 1);
-            if (await commit.SetGuess(user.Name, guess.Guess))
-                return Ok();
-            else
-                return BadRequest();
+                if (await commit.SetGuess(user.Name, guess.Guess))
+                    return Ok();
+                else
+                    return InternalServerError();
+            });
         }
     }
 }
