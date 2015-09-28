@@ -149,19 +149,18 @@ namespace GitGameServer.Controllers
         [HttpPut]
         public IHttpActionResult SetState([FromUri]string gameid, [FromBody]SetStates? state)
         {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-            {
-                if (state == SetStates.start)
-                {
-                    GameManager.Singleton.StartGame(setup);
-                    return Ok();
-                }
-                else
-                    return BadRequest("Invalid game state.");
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            return loggedIn<GameSetup>(gameid, (game, user) =>
+             {
+                 if (!game.IsCreator(user))
+                     return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                     { ReasonPhrase = "Only the game creator can change the game state." });
+
+                 if (state != SetStates.start)
+                     return BadRequest("Game state can only be set to start (when starting the game).");
+
+                 GameManager.Singleton.StartGame(game);
+                 return Ok();
+             });
         }
 
         [Route("game/{gameid}/rounds/{round}/guesses")]
