@@ -93,10 +93,6 @@ namespace GitGameServer
                     {
                         long offset = commit.game.tableStart + commit.game.tableIndex * commit.game.rowSize;
                         fs.Seek(offset + 40 + user, SeekOrigin.Begin);
-                        var existing = fs.ReadByte();
-                        if (existing > 0)
-                            return false;
-                        fs.Seek(-1, SeekOrigin.Current);
                         fs.WriteByte(guesses[user]);
                     }
 
