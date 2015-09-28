@@ -33,24 +33,6 @@ namespace GitGameServer.Controllers
         }
 
         [Route("game/{gameid}/setup")]
-        [HttpGet]
-        public IHttpActionResult GetSetup([FromUri]string gameid)
-        {
-            GameSettings settings;
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-                settings = setup.Settings;
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
-
-            return Ok(new
-            {
-                contributors = setup.GetContributors(),
-                excludeMerges = settings.HasFlag(GameSettings.ExcludeMerges),
-                lowerCase = settings.HasFlag(GameSettings.LowerCase)
-            });
-        }
-        [Route("game/{gameid}/setup")]
         [HttpPut]
         public IHttpActionResult SetSetup([FromUri]string gameid, [FromBody]Models.GameSettings settings)
         {
@@ -101,19 +83,6 @@ namespace GitGameServer.Controllers
                 value = (GameSettings)v;
             }
             return value;
-        }
-
-        [Route("game/{gameid}/players")]
-        [HttpGet]
-        public IHttpActionResult GetUsers([FromUri]string gameid)
-        {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-            {
-                return Ok(setup.GetUsers().Select(x => new { name = x.Name }));
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
         }
 
         [Route("game/{gameid}/players")]
@@ -209,67 +178,6 @@ namespace GitGameServer.Controllers
             }
             else
                 return BadRequest();
-        }
-
-        [Route("game/{gameid}/rounds/{round}/guesses")]
-        [HttpGet]
-        public async Task<IHttpActionResult> GetGuesses([FromUri]string gameid, [FromUri]int round)
-        {
-            Game game;
-            if (!GameManager.Singleton.TryGetGame(gameid, out game))
-                return BadRequest($"No game with {nameof(gameid)} was found.");
-
-            JArray arr = new JArray();
-
-            var commit = await game.Commits.GetCommit(round - 1);
-            foreach (var u in game.GetUserNames())
-            {
-                string guess;
-                if (!commit.Guesses.GetGuess(u, out guess))
-                    continue;
-                bool hasguess = guess != null;
-
-                JObject obj = new JObject()
-                {
-                    { "name", u },
-                    { "hasGuess", hasguess }
-                };
-
-                if (game.Round > round)
-                    obj.Add("guess", guess);
-
-                arr.Add(obj);
-            }
-
-            return Ok(arr);
-        }
-
-        [Route("game/{gameid}/rounds/{round}")]
-        [HttpGet]
-        public async Task<IHttpActionResult> GetRound([FromUri]string gameid, [FromUri]int round)
-        {
-            Game game;
-            if (!GameManager.Singleton.TryGetGame(gameid, out game))
-                return BadRequest($"No game with {nameof(gameid)} was found.");
-
-            JArray arr = new JArray();
-
-            var commit = await game.Commits.GetCommit(round - 1);
-
-            JObject obj = new JObject()
-            {
-                { "message", commit.Message },
-                { "linesAdded", commit.Added },
-                { "linesRemoved", commit.Removed }
-            };
-
-            if (game.Round > round)
-            {
-                obj.Add("committer", commit.Username);
-                obj.Add("sha", commit.Sha);
-            }
-
-            return Ok(obj);
         }
     }
 }
