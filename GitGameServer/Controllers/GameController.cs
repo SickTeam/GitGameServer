@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using Octokit;
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -20,11 +22,11 @@ namespace GitGameServer.Controllers
                 if (game is T)
                     return method((T)game);
                 else
-                    return ResponseMessage(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden)
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.Forbidden)
                     { ReasonPhrase = $@"Game is currently in state ""{game.State}"" which does not support your current request." });
             }
             else
-                return ResponseMessage(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
+                return ResponseMessage(new HttpResponseMessage(HttpStatusCode.NotFound)
                 { ReasonPhrase = $@"No game with id ""{gameid}"" was found." });
         }
 
@@ -114,7 +116,7 @@ namespace GitGameServer.Controllers
         public async Task<IHttpActionResult> MakeGuess([FromUri]string gameid, [FromUri]int round, [FromBody]GuessInput guess)
         {
             var userhash = Request.Headers.Authorization.Scheme;
-            /* send: { guess: "mikaelec" } */
+
             Game game;
             if (!GameManager.Singleton.TryGetGame(gameid, out game))
                 return BadRequest($"No game with {nameof(gameid)} was found.");
