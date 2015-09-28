@@ -53,66 +53,42 @@ namespace GitGameServer.Controllers
         [HttpPut]
         public IHttpActionResult SetSetup([FromUri]string gameid, [FromBody]Models.GameSettings settings)
         {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
+            return useGame<GameSetup>(gameid, game =>
             {
-                setup.SetSettings(settings);
+                game.SetSettings(settings);
                 return Ok();
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            });
         }
 
         [Route("game/{gameid}/players")]
         [HttpPost]
         public IHttpActionResult AddUser([FromUri]string gameid, [FromBody]string username)
         {
-            GameSetup setup;
-            if (GameManager.Singleton.TryGetSetup(gameid, out setup))
-            {
-                User user = setup.AddUser(username);
-                return Ok(new { userId = user.Hash });
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            return useGame<GameSetup>(gameid, game => Ok(new { userId = game.AddUser(username).Hash }));
         }
 
         [Route("game/{gameid}/messages")]
         [HttpGet]
         public IHttpActionResult GetMessages([FromUri]string gameid)
         {
-            var modoffset = Request.Headers.IfModifiedSince;
-            var mod = modoffset?.UtcDateTime;
-
-            IGame game;
-            if (GameManager.Singleton.TryGetGame(gameid, out game))
+            return useGame(gameid, game =>
             {
-                var messages = mod.HasValue ? game.GetMessagesSince(mod.Value) : game.GetMessages();
-                var time = DateTime.UtcNow;
-                JObject obj = new JObject()
+                var modified = Request.Headers.IfModifiedSince?.UtcDateTime;
+                var messages = modified.HasValue ? game.GetMessagesSince(modified.Value) : game.GetMessages();
+
+                return Ok(new
                 {
-                    { "timestamp", time },
-                    { "messages", new JArray(messages.Select(x=>x.ToJObject(gameid))) }
-                };
-                return Ok(obj);
-            }
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+                    timestamp = DateTime.UtcNow,
+                    messages = messages.Select(x => x.ToJObject(gameid)).ToArray()
+                });
+            });
         }
 
         [Route("game/{gameid}/state")]
         [HttpGet]
         public IHttpActionResult GetState([FromUri]string gameid)
         {
-            IGame game;
-            if (GameManager.Singleton.TryGetGame(gameid, out game))
-                return Ok(new
-                {
-                    state = game.State,
-                    round = game.GetType() == typeof(Game) ? (game as Game).Round : 0
-                });
-            else
-                return BadRequest("No game with " + nameof(gameid) + " was found.");
+            return useGame(gameid, game => Ok(new { state = game.State }));
         }
         [Route("game/{gameid}/state")]
         [HttpPut]
