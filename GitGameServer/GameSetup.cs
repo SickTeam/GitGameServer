@@ -50,7 +50,7 @@ namespace GitGameServer
             settings.LowerCase = false;
             settings.Contributors = GetContributors().Select(x => new Models.GameSettings.Contributor() { Name = x.Name, Active = x.Active }).ToArray();
 
-            this.SetSettings(new Models.GameSettings() { });
+            this.SetSettings(settings);
         }
 
         string IGame.State => "setup";
