@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Threading;
 
 namespace GitGameServer.Controllers
 {
@@ -131,6 +132,9 @@ namespace GitGameServer.Controllers
                 var modified = Request.Headers.IfModifiedSince?.UtcDateTime;
                 var messages = modified.HasValue ? game.GetMessagesSince(modified.Value) : game.GetMessages();
 
+                if (modified.HasValue && messages.Count() == 0)
+                    return NotModified();
+
                 return Ok(new
                 {
                     timestamp = DateTime.UtcNow,
@@ -180,5 +184,8 @@ namespace GitGameServer.Controllers
                     return InternalServerError();
             });
         }
+
+        private IHttpActionResult NotModified()
+            => ResponseMessage(new HttpResponseMessage(HttpStatusCode.NotModified));
     }
 }
